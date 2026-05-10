@@ -111,7 +111,7 @@ export default function ScannerPage() {
         .upload-zone {
           padding: 40px;
           text-align: center;
-          border: 2px dashed rgba(255, 255, 255, 0.2);
+          border: 2px dashed rgba(0, 0, 0, 0.1);
           position: relative;
         }
         .upload-prompt {
@@ -144,7 +144,7 @@ export default function ScannerPage() {
           color: var(--primary-color);
         }
         .diagnosis-box {
-          background: rgba(0,0,0,0.3);
+          background: rgba(0,0,0,0.05);
           padding: 16px;
           border-radius: 8px;
           margin-bottom: 20px;
@@ -155,13 +155,13 @@ export default function ScannerPage() {
         }
         .recc-list {
           padding-left: 20px;
-          color: var(--text-light);
+          color: var(--text-dark);
         }
         .recc-list li {
           margin-bottom: 8px;
         }
         .error-box {
-          color: #ff6b6b;
+          color: #d32f2f;
           font-weight: bold;
         }
       `}</style>

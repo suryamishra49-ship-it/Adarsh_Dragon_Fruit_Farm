@@ -46,7 +46,7 @@ export default function MarketplacePage() {
           <div key={product.id} className="product-card glass-panel">
             <div 
               className="product-image" 
-              style={{ backgroundImage: `url(${product.image})`, backgroundColor: 'rgba(255,255,255,0.1)' }}
+              style={{ backgroundImage: `url(${product.image})`, backgroundColor: 'rgba(0,0,0,0.05)' }}
             />
             <div className="product-details">
               <h3 className="product-name">{product.name}</h3>
