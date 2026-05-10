@@ -41,128 +41,106 @@ export default function ScannerPage() {
   };
 
   return (
-    <main style={{ padding: '100px 5%' }}>
+    <main style={{ padding: '120px 5% 60px', background: 'var(--bg-soft)', minHeight: '100vh' }}>
       <nav className="navbar scrolled">
         <Link href="/" className="nav-logo">
           Adarsh <span>Dragon Fruit Farm</span>
         </Link>
+        <div className="nav-links">
+          <Link href="/guide" className="nav-link">Guide</Link>
+          <Link href="/marketplace" className="nav-link">Marketplace</Link>
+          <Link href="/login" className="nav-link">Login</Link>
+        </div>
       </nav>
       
-      <h1 className="section-title">AI Disease Scanner</h1>
-      
-      <div className="scanner-container">
-        <div className="upload-zone glass-panel">
-          {!preview ? (
-            <div className="upload-prompt">
-              <span className="feature-icon" style={{ fontSize: '4rem' }}>📸</span>
-              <h3>Upload a Photo</h3>
-              <p>Take a clear picture of the dragon fruit or leaf.</p>
-              <input type="file" accept="image/*" onChange={handleFileChange} className="file-input" />
-            </div>
-          ) : (
-            <div className="preview-container">
-              <img src={preview} alt="Preview" className="image-preview" />
-              <div className="actions">
-                <button className="btn-secondary" onClick={() => { setFile(null); setPreview(null); setResult(null); }}>
-                  Choose Another
-                </button>
-                <button className="btn-primary" onClick={handleAnalyze} disabled={analyzing}>
-                  {analyzing ? 'Analyzing with Gemini...' : 'Analyze Image'}
-                </button>
-              </div>
-            </div>
-          )}
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '15px' }}>AI Disease Scanner</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Upload a photo of your dragon fruit plant for instant AI diagnosis and remedies.</p>
         </div>
-
-        {result && (
-          <div className="result-zone glass-panel">
-            {result.success ? (
-              <>
-                <h3 className="result-title">Diagnosis Results</h3>
-                <div className="diagnosis-box">
-                  <p><strong>Status:</strong> {result.diagnosis}</p>
-                  <p><strong>AI Confidence:</strong> {(result.confidence * 100).toFixed(0)}%</p>
+        
+        <div className="scanner-container">
+          <div className="upload-zone glass-panel">
+            {!preview ? (
+              <label className="upload-label" style={{ cursor: 'pointer', display: 'block', padding: '60px' }}>
+                <div className="upload-prompt">
+                  <span className="feature-icon" style={{ fontSize: '4rem', display: 'block', marginBottom: '20px' }}>📸</span>
+                  <h3 style={{ marginBottom: '10px' }}>Upload a Photo</h3>
+                  <p style={{ color: 'var(--text-muted)' }}>Click here or take a clear picture of the dragon fruit or leaf.</p>
                 </div>
-                
-                <h4 className="recc-title">Recommendations</h4>
-                <ul className="recc-list">
-                  {result.recommendations?.map((r: string, i: number) => (
-                    <li key={i}>{r}</li>
-                  ))}
-                </ul>
-              </>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileChange} 
+                  style={{ display: 'none' }} 
+                />
+              </label>
             ) : (
-              <div className="error-box">
-                <p>Error: {result.error || 'Something went wrong'}</p>
+              <div className="preview-container" style={{ padding: '30px' }}>
+                <img src={preview} alt="Preview" className="image-preview" />
+                <div className="actions" style={{ marginTop: '20px', display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                  <button className="btn-secondary" onClick={() => { setFile(null); setPreview(null); setResult(null); }}>
+                    Choose Another
+                  </button>
+                  <button className="btn-primary" onClick={handleAnalyze} disabled={analyzing}>
+                    {analyzing ? 'Analyzing with Gemini AI...' : 'Analyze Image Now'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
-        )}
+
+          {result && (
+            <div className="result-zone glass-panel" style={{ padding: '40px', marginTop: '30px', borderLeft: '6px solid var(--primary-color)' }}>
+              {result.success ? (
+                <>
+                  <h3 className="result-title" style={{ color: 'var(--primary-color)', marginBottom: '25px', fontSize: '1.8rem' }}>AI Diagnosis Results</h3>
+                  <div className="diagnosis-box" style={{ background: '#f0f7f0', padding: '20px', borderRadius: '12px', marginBottom: '30px' }}>
+                    <p style={{ fontSize: '1.1rem', marginBottom: '10px' }}><strong>Status:</strong> {result.diagnosis}</p>
+                    <p style={{ color: 'var(--text-muted)' }}><strong>AI Confidence:</strong> {(result.confidence * 100).toFixed(0)}%</p>
+                  </div>
+                  
+                  <h4 className="recc-title" style={{ marginBottom: '15px', fontSize: '1.3rem' }}>Expert Recommendations</h4>
+                  <ul className="recc-list" style={{ lineHeight: '1.8' }}>
+                    {result.recommendations?.map((r: string, i: number) => (
+                      <li key={i} style={{ marginBottom: '10px' }}>{r}</li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <div className="error-box" style={{ color: '#d32f2f', textAlign: 'center' }}>
+                  <p style={{ fontSize: '1.2rem' }}>Error: {result.error || 'Something went wrong'}</p>
+                  <button className="btn-secondary" style={{ marginTop: '15px' }} onClick={() => setResult(null)}>Try Again</button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <style jsx>{`
-        .scanner-container {
-          max-width: 800px;
-          margin: 0 auto;
-          display: flex;
-          flex-direction: column;
-          gap: 30px;
-        }
         .upload-zone {
-          padding: 40px;
-          text-align: center;
-          border: 2px dashed rgba(0, 0, 0, 0.1);
-          position: relative;
+          transition: all 0.3s ease;
+          border: 2px dashed rgba(46, 125, 50, 0.2);
         }
-        .upload-prompt {
-          pointer-events: none;
-        }
-        .file-input {
-          position: absolute;
-          top: 0; left: 0; width: 100%; height: 100%;
-          opacity: 0;
-          cursor: pointer;
+        .upload-zone:hover {
+          border-color: var(--primary-color);
+          background: rgba(46, 125, 50, 0.02);
+          transform: translateY(-2px);
         }
         .image-preview {
           max-width: 100%;
-          max-height: 400px;
-          border-radius: 8px;
-          margin-bottom: 20px;
-        }
-        .actions {
-          display: flex;
-          gap: 16px;
-          justify-content: center;
-        }
-        .result-zone {
-          padding: 30px;
-          border-left: 4px solid var(--primary-color);
-        }
-        .result-title {
-          font-size: 1.5rem;
-          margin-bottom: 16px;
-          color: var(--primary-color);
-        }
-        .diagnosis-box {
-          background: rgba(0,0,0,0.05);
-          padding: 16px;
-          border-radius: 8px;
-          margin-bottom: 20px;
-        }
-        .recc-title {
-          font-size: 1.2rem;
-          margin-bottom: 12px;
+          max-height: 450px;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         .recc-list {
-          padding-left: 20px;
-          color: var(--text-dark);
+          list-style: none;
+          padding: 0;
         }
-        .recc-list li {
-          margin-bottom: 8px;
-        }
-        .error-box {
-          color: #d32f2f;
-          font-weight: bold;
+        .recc-list li::before {
+          content: "✅";
+          margin-right: 10px;
         }
       `}</style>
     </main>
