@@ -7,7 +7,7 @@ export default function Home() {
     <main>
       <nav className="navbar scrolled">
         <div className="nav-logo">
-          Dragon<span>Solar</span>
+          Adarsh <span>Dragon Fruit Farm</span>
         </div>
         <div className="nav-links">
           <Link href="/guide" className="nav-link">Guide</Link>
@@ -134,7 +134,7 @@ export default function Home() {
       <footer style={{ padding: '80px 5% 40px', background: 'var(--primary-color)', color: 'white' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px', marginBottom: '60px' }}>
           <div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>DragonSolar</h3>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Adarsh Dragon Fruit Farm</h3>
             <p style={{ opacity: '0.8' }}>Empowering dragon fruit farmers through technology and community.</p>
           </div>
           <div>

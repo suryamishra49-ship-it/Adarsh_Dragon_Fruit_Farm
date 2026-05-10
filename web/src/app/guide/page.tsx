@@ -59,7 +59,7 @@ export default function GuidePage() {
     <main style={{ padding: '100px 5%' }}>
       <nav className="navbar scrolled">
         <Link href="/" className="nav-logo">
-          Dragon<span>Solar</span>
+          Adarsh <span>Dragon Fruit Farm</span>
         </Link>
       </nav>
       

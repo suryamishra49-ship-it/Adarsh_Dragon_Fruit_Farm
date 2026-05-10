@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DragonSolar | Premium Dragon Fruit Farming Platform",
+  title: "Adarsh Dragon Fruit Farm | Premium Farming Platform",
   description: "Master dragon fruit farming with interactive guides, AI disease detection, and a community marketplace.",
 };
 
