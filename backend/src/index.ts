@@ -5,6 +5,12 @@ import guideRoutes from './routes/guide';
 import scannerRoutes from './routes/scanner';
 import marketplaceRoutes from './routes/marketplace';
 
+import authRoutes from './routes/auth';
+import appointmentRoutes from './routes/appointments';
+import orderRoutes from './routes/orders';
+import galleryRoutes from './routes/gallery';
+import activityRoutes from './routes/activity';
+
 dotenv.config();
 
 const app = express();
@@ -19,9 +25,14 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/guide', guideRoutes);
 app.use('/api/scanner', scannerRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/gallery', galleryRoutes);
+app.use('/api/activity', activityRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Dragon Fruit Platform API is running.' });
