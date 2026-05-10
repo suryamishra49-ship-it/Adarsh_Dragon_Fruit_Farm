@@ -8,6 +8,8 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('CUSTOMER');
+  const [adminKey, setAdminKey] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
@@ -15,11 +17,16 @@ export default function RegisterPage() {
     e.preventDefault();
     setError('');
     
+    if (role === 'OWNER' && adminKey !== 'ADARSH_ADMIN_2026') {
+      setError('Invalid Admin Secret Key');
+      return;
+    }
+    
     try {
       const res = await fetch('https://adarsh-dragon-fruit-farm.onrender.com/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role: 'CUSTOMER' }),
+        body: JSON.stringify({ name, email, password, role }),
       });
       
       const data = await res.json();
@@ -36,12 +43,39 @@ export default function RegisterPage() {
 
   return (
     <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-soft)' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '40px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>Create Account</h2>
+      <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '40px' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '10px' }}>Join the Farm</h2>
+        <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '30px' }}>Create your Adarsh Farm account</p>
         
-        {error && <div style={{ color: '#d32f2f', marginBottom: '20px', textAlign: 'center', fontSize: '0.9rem' }}>{error}</div>}
+        {error && <div style={{ color: '#d32f2f', marginBottom: '20px', textAlign: 'center', fontSize: '0.9rem', padding: '10px', background: '#ffebee', borderRadius: '8px' }}>{error}</div>}
         
         <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Account Type</label>
+            <select 
+              value={role} 
+              onChange={(e) => setRole(e.target.value)}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
+            >
+              <option value="CUSTOMER">Customer (Buy & Book)</option>
+              <option value="OWNER">Farm Owner (Admin Panel)</option>
+            </select>
+          </div>
+
+          {role === 'OWNER' && (
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--primary-color)' }}>Admin Secret Key</label>
+              <input 
+                type="text" 
+                placeholder="Enter secret key to register as Admin"
+                value={adminKey}
+                onChange={(e) => setAdminKey(e.target.value)}
+                required
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '2px solid var(--primary-color)' }}
+              />
+            </div>
+          )}
+
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Full Name</label>
             <input 
@@ -75,7 +109,7 @@ export default function RegisterPage() {
               style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
             />
           </div>
-          <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>Join the Farm</button>
+          <button type="submit" className="btn-primary" style={{ marginTop: '10px' }}>Register Account</button>
         </form>
         
         <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
