@@ -99,21 +99,21 @@ export default function Home() {
       <section className="features-section">
         <h2 className="section-title">Our Core Services</h2>
         <div className="features-grid">
-          <div className="feature-card glass-panel">
+          <Link href="/guide" className="feature-card glass-panel" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
             <div className="feature-icon">🌱</div>
             <h3 className="feature-title">Cultivation Guide</h3>
             <p className="feature-desc">Interactive modules for soil prep, trellising, pruning, and harvesting. Track your progress seamlessly.</p>
-          </div>
-          <div className="feature-card glass-panel">
+          </Link>
+          <Link href="/scanner" className="feature-card glass-panel" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
             <div className="feature-icon">📸</div>
             <h3 className="feature-title">AI Disease Scanner</h3>
             <p className="feature-desc">Our Gemini AI instantly detects diseases from your photos and suggests professional remedies.</p>
-          </div>
-          <div className="feature-card glass-panel">
+          </Link>
+          <Link href="/marketplace" className="feature-card glass-panel" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
             <div className="feature-icon">🛒</div>
             <h3 className="feature-title">Marketplace</h3>
             <p className="feature-desc">Buy high-quality cuttings or sell your premium harvest directly to buyers without intermediaries.</p>
-          </div>
+          </Link>
         </div>
       </section>
 
