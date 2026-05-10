@@ -21,8 +21,8 @@ export default function GuidePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:3001/api/guide/steps').then(r => r.json()),
-      fetch('http://localhost:3001/api/guide/progress').then(r => r.json()).catch(() => ({ progress: [] }))
+      fetch('https://adarsh-dragon-fruit-farm.onrender.com/api/guide/steps').then(r => r.json()),
+      fetch('https://adarsh-dragon-fruit-farm.onrender.com/api/guide/progress').then(r => r.json()).catch(() => ({ progress: [] }))
     ]).then(([stepsData, progressData]) => {
       setSteps(stepsData.steps || []);
       setProgress(progressData.progress || []);
@@ -32,7 +32,7 @@ export default function GuidePage() {
 
   const markComplete = async (stepId: number) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/guide/progress/${stepId}`, {
+      const res = await fetch(`https://adarsh-dragon-fruit-farm.onrender.com/api/guide/progress/${stepId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'COMPLETED' })

@@ -26,7 +26,7 @@ export default function ScannerPage() {
     formData.append('image', file);
 
     try {
-      const res = await fetch('http://localhost:3001/api/scanner/analyze', {
+      const res = await fetch('https://adarsh-dragon-fruit-farm.onrender.com/api/scanner/analyze', {
         method: 'POST',
         body: formData,
       });

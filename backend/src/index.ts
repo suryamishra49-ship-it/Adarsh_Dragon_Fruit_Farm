@@ -13,6 +13,11 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Root Route
+app.get('/', (req, res) => {
+  res.send('Adarsh Dragon Fruit Farm API is live!');
+});
+
 // Routes
 app.use('/api/guide', guideRoutes);
 app.use('/api/scanner', scannerRoutes);
