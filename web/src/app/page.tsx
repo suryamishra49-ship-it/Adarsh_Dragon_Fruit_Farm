@@ -72,7 +72,6 @@ export default function Home() {
         <div className="hero-bg"></div>
         <div className="hero-content">
           <h1 className="hero-title">
-            Professional <br />
             <span className="gradient-text">Dragon Fruit Farming</span>
           </h1>
           <p className="hero-subtitle">
