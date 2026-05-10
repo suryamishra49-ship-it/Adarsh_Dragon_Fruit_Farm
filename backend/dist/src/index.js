@@ -2,7 +2,6 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
@@ -10,6 +9,11 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const guide_1 = __importDefault(require("./routes/guide"));
 const scanner_1 = __importDefault(require("./routes/scanner"));
 const marketplace_1 = __importDefault(require("./routes/marketplace"));
+const auth_1 = __importDefault(require("./routes/auth"));
+const appointments_1 = __importDefault(require("./routes/appointments"));
+const orders_1 = __importDefault(require("./routes/orders"));
+const gallery_1 = __importDefault(require("./routes/gallery"));
+const activity_1 = __importDefault(require("./routes/activity"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
@@ -20,9 +24,14 @@ app.get('/', (req, res) => {
     res.send('Adarsh Dragon Fruit Farm API is live!');
 });
 // Routes
+app.use('/api/auth', auth_1.default);
 app.use('/api/guide', guide_1.default);
 app.use('/api/scanner', scanner_1.default);
 app.use('/api/marketplace', marketplace_1.default);
+app.use('/api/appointments', appointments_1.default);
+app.use('/api/orders', orders_1.default);
+app.use('/api/gallery', gallery_1.default);
+app.use('/api/activity', activity_1.default);
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'Dragon Fruit Platform API is running.' });
 });

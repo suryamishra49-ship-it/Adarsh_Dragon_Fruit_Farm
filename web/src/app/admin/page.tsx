@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import '../../globals.css';
+import '../globals.css';
 
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
