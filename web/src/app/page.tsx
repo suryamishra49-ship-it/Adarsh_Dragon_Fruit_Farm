@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+// Triggering redeploy to ensure gallery and admin routes are live
 import Link from 'next/link';
 import './globals.css';
 
