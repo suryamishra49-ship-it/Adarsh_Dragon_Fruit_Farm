@@ -1,16 +1,32 @@
 import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
 
 const router = Router();
+const prisma = new PrismaClient();
 
 // Get products
-router.get('/products', (req, res) => {
-  res.json({
-    products: [
-      { id: 1, name: 'Premium Red Dragon Fruit', price: 5.99, unit: 'kg', farmer: 'John Doe', image: '/images/red-dragon.jpg' },
-      { id: 2, name: 'White Flesh Dragon Fruit', price: 4.50, unit: 'kg', farmer: 'Jane Smith', image: '/images/white-dragon.jpg' },
-      { id: 3, name: 'Yellow Dragon Fruit (Palora)', price: 8.99, unit: 'kg', farmer: 'Bob Green', image: '/images/yellow-dragon.jpg' },
-    ]
-  });
+router.get('/products', async (req, res) => {
+  try {
+    const products = await prisma.product.findMany({
+      include: {
+        farmer: {
+          select: { name: true }
+        }
+      }
+    });
+    
+    // Map data to match frontend expectations
+    const formattedProducts = products.map(p => ({
+      ...p,
+      farmer: p.farmer.name,
+      image: p.image || '/images/placeholder.jpg' // default image if none provided
+    }));
+
+    res.json({ products: formattedProducts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
 });
 
 export default router;
