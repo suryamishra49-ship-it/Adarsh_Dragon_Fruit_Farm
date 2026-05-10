@@ -176,6 +176,22 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Farm Gallery */}
+      <section className="gallery-section" style={{ padding: '100px 5%', background: 'var(--bg-soft)' }}>
+        <h2 className="section-title">Farm Gallery</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+          <div className="glass-panel" style={{ overflow: 'hidden', height: '300px' }}>
+            <img src="/images/plant.png" alt="Dragon Fruit Plant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+          <div className="glass-panel" style={{ overflow: 'hidden', height: '300px' }}>
+            <img src="/images/closeup.png" alt="Dragon Fruit Close-up" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+          <div className="glass-panel" style={{ overflow: 'hidden', height: '300px' }}>
+            <img src="/images/harvest.png" alt="Dragon Fruit Harvest" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        </div>
+      </section>
+
       {/* Activity Updates */}
       <section className="activity-section" style={{ padding: '100px 5%', background: 'var(--bg-light)' }}>
         <h2 className="section-title">Latest Farm Activity</h2>
