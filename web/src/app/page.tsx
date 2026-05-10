@@ -1,7 +1,53 @@
+'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import './globals.css';
 
 export default function Home() {
   const addressLink = "https://www.google.com/search?q=adarsh+dragon+fruit+pratapgarh&sca_esv=eaaded7228c02422&rlz=1C1MYPO_en-GBIN1173IN1173&biw=1536&bih=695&sxsrf=ANbL-n4lo9vXNZN2xly_dveLlFvpCRsm-g%3A1778417118444&ei=3n0AaprpGuSKnesPrsmnkA4&oq=adarsh+dragon+fruit+farmPrata&gs_lp=Egxnd3Mtd2l6LXNlcnAiHWFkYXJzaCBkcmFnb24gZnJ1aXQgZmFybVByYXRhKgIIADIHECEYChigATIHECEYChigAUjwNlCpB1jZLXABeACQAQCYAdMBoAGFDqoBBjAuMTEuMbgBA8gBAPgBAZgCCqACgAvCAg4QABiABBiKBRiGAxiwA8ICCxAAGIAEGKIEGLADwgIIEAAY7wUYsAPCAgQQIxgnwgIFEAAY7wXCAggQABiABBiiBMICBxAjGLACGCeYAwCIBgGQBgaSBwUxLjguMaAH2j6yBwUwLjguMbgH_ArCBwQwLjEwyAcRgAgB&sclient=gws-wiz-serp";
+
+  const [user, setUser] = useState<any>(null);
+  const [appointmentDate, setAppointmentDate] = useState('');
+  const [appointmentPurpose, setAppointmentPurpose] = useState('');
+  const [bookingStatus, setBookingStatus] = useState('');
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  const handleBookAppointment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      setBookingStatus('Please login to book an appointment');
+      return;
+    }
+
+    try {
+      const res = await fetch('https://adarsh-dragon-fruit-farm.onrender.com/api/appointments', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          date: appointmentDate,
+          purpose: appointmentPurpose
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setBookingStatus('Request sent! Check your dashboard for status.');
+        setAppointmentDate('');
+        setAppointmentPurpose('');
+      } else {
+        setBookingStatus('Failed to book. Try again.');
+      }
+    } catch (err) {
+      setBookingStatus('Connection error.');
+    }
+  };
 
   return (
     <main>
@@ -13,6 +59,11 @@ export default function Home() {
           <Link href="/guide" className="nav-link">Guide</Link>
           <Link href="/scanner" className="nav-link">AI Scanner</Link>
           <Link href="/marketplace" className="nav-link">Marketplace</Link>
+          {user ? (
+            <Link href={user.role === 'OWNER' ? '/admin' : '/dashboard'} className="nav-link btn-secondary" style={{ padding: '8px 20px', marginLeft: '10px' }}>Dashboard</Link>
+          ) : (
+            <Link href="/login" className="nav-link btn-secondary" style={{ padding: '8px 20px', marginLeft: '10px' }}>Login</Link>
+          )}
         </div>
       </nav>
 
@@ -70,16 +121,32 @@ export default function Home() {
         <div className="glass-panel" style={{ maxWidth: '800px', margin: '0 auto', padding: '60px', textAlign: 'center' }}>
           <h2 className="section-title" style={{ marginBottom: '20px' }}>Visit Adarsh Dragon Fruit Farm</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>Experience our high-tech cultivation methods firsthand. Book a guided tour of our farm in Pratapgarh.</p>
-          <form style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', textAlign: 'left' }}>
+          
+          {bookingStatus && <div style={{ marginBottom: '20px', padding: '10px', background: 'var(--bg-soft)', borderRadius: '8px', color: 'var(--primary-color)', fontWeight: '600' }}>{bookingStatus}</div>}
+          
+          <form onSubmit={handleBookAppointment} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', textAlign: 'left' }}>
             <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Name</label>
-              <input type="text" placeholder="Your Name" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Purpose of Visit</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Purchase cuttings, Learn pruning" 
+                value={appointmentPurpose}
+                onChange={(e) => setAppointmentPurpose(e.target.value)}
+                required
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} 
+              />
             </div>
             <div className="form-group">
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Date</label>
-              <input type="date" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} />
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Preferred Date</label>
+              <input 
+                type="date" 
+                value={appointmentDate}
+                onChange={(e) => setAppointmentDate(e.target.value)}
+                required
+                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }} 
+              />
             </div>
-            <button className="btn-primary" style={{ gridColumn: '1 / -1', marginTop: '20px' }} type="button">Request Appointment</button>
+            <button className="btn-primary" style={{ gridColumn: '1 / -1', marginTop: '20px' }} type="submit">Request Appointment</button>
           </form>
         </div>
       </section>
@@ -153,12 +220,15 @@ export default function Home() {
           </div>
           <div>
             <h4 style={{ marginBottom: '20px' }}>Connect With Us</h4>
-            <div style={{ display: 'flex', gap: '20px' }}>
-              <a href="#" style={{ color: 'white', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                WhatsApp
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <a href="https://wa.me/+919628984643" target="_blank" rel="noopener noreferrer" style={{ color: 'white', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                💬 WhatsApp (9628984643)
               </a>
-              <a href="#" style={{ color: 'white', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                YouTube
+              <a href="https://wa.me/+919565435834" target="_blank" rel="noopener noreferrer" style={{ color: 'white', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                💬 WhatsApp (9565435834)
+              </a>
+              <a href="https://www.youtube.com/@adarshdragonfruitfarm" target="_blank" rel="noopener noreferrer" style={{ color: 'white', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                📺 YouTube Channel
               </a>
             </div>
           </div>
