@@ -21,6 +21,7 @@ model User {
   appointments Appointment[]
   orders       Order[]
   reviews      Review[]
+  logs         ActivityLog[]
 }
 
 model Product {
@@ -85,6 +86,15 @@ model Activity {
   content   String
   imageUrl  String?
   date      DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  details   String?
   createdAt DateTime @default(now())
 }
 

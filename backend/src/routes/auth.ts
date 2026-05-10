@@ -22,6 +22,14 @@ router.post('/register', async (req, res) => {
       }
     });
     
+    await prisma.activityLog.create({
+      data: {
+        userId: user.id,
+        action: 'USER_REGISTERED',
+        details: `New user ${email} registered.`
+      }
+    });
+    
     res.status(201).json({ success: true, message: 'User created' });
   } catch (error) {
     res.status(400).json({ success: false, message: 'User already exists or invalid data' });
@@ -44,6 +52,14 @@ router.post('/login', async (req, res) => {
       JWT_SECRET,
       { expiresIn: '24h' }
     );
+    
+    await prisma.activityLog.create({
+      data: {
+        userId: user.id,
+        action: 'USER_LOGIN',
+        details: `User ${user.email} logged in.`
+      }
+    });
     
     res.json({
       success: true,

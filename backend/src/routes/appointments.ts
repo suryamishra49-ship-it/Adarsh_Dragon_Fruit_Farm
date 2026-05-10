@@ -28,6 +28,13 @@ router.post('/', async (req, res) => {
         status: 'PENDING'
       }
     });
+    await prisma.activityLog.create({
+      data: {
+        userId,
+        action: 'APPOINTMENT_REQUESTED',
+        details: `Appointment requested for ${new Date(date).toLocaleDateString()}`
+      }
+    });
     res.status(201).json({ success: true, appointment });
   } catch (error) {
     res.status(400).json({ success: false, error: 'Failed to book appointment' });
@@ -42,6 +49,12 @@ router.patch('/:id', async (req, res) => {
     const appointment = await prisma.appointment.update({
       where: { id: parseInt(id) },
       data: { status }
+    });
+    await prisma.activityLog.create({
+      data: {
+        action: 'APPOINTMENT_UPDATED',
+        details: `Appointment #${id} status changed to ${status}`
+      }
     });
     res.json({ success: true, appointment });
   } catch (error) {
