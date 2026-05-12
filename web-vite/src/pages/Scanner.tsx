@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, Search, CheckCircle2, AlertCircle, ExternalLink, Copy } from 'lucide-react';
+import { Camera, Search, CheckCircle2, AlertCircle, Copy } from 'lucide-react';
 
 export default function Scanner() {
   const [copied, setCopied] = useState(false);
@@ -14,7 +14,7 @@ export default function Scanner() {
   const steps = [
     { id: '01', title: 'Take a Photo', desc: 'Capture a well-lit, close-up photo of the affected plant part.', icon: <Camera /> },
     { id: '02', title: 'Open Google Lens', desc: 'Tap the button below to launch the visual search tool.', icon: <Search /> },
-    { id: '03', title: 'Get Remedies', desc: 'Identify the issue and find organic remedies instantly.', icon: <CheckCircle2 /> },
+    { id: '03', title: 'Get Remedies', desc: 'Identify the issue and find natural remedies instantly.', icon: <CheckCircle2 /> },
   ];
 
   return (

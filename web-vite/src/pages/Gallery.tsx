@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Play, Image as ImageIcon, X } from 'lucide-react';
+import { Plus, Play, X } from 'lucide-react';
 
 interface Media {
   id: number;

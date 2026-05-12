@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
-  CloudRain, Sun, Thermometer, Droplets, 
+  CloudRain, Sun, Droplets, 
   MessageSquare, ChevronRight, CheckCircle2, 
   LineChart, Bell, History as HistoryIcon,
   Wind, Ruler, Plus, Send
@@ -13,7 +13,7 @@ export default function Guide() {
   const steps = [
     { id: 1, title: 'Seed Selection', description: 'Choose high-quality, disease-resistant dragon fruit seeds or cuttings.' },
     { id: 2, title: 'Soil Preparation', description: 'Pitaya thrives in well-draining sandy loam soil with pH 6-7.' },
-    { id: 3, title: 'Planting', description: 'Plant cuttings in 1-foot deep holes with organic fertilizer.' },
+    { id: 3, title: 'Planting', description: 'Plant cuttings in 1-foot deep holes with natural fertilizer.' },
     { id: 4, title: 'Support System', description: 'Install concrete pillars or wooden stakes for the cacti to climb.' },
     { id: 5, title: 'Irrigation & Care', description: 'Water twice a week. Ensure 6-8 hours of direct sunlight.' },
     { id: 6, title: 'Harvesting', description: 'Pick the fruit when it turns bright pink and the skin is slightly soft.' },

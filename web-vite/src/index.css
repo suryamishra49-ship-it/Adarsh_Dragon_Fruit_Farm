@@ -4,24 +4,39 @@
   --color-pitaya: #FF3377;
   --color-cactus: #4CAF50;
   --color-clean-white: #FFFFFF;
+  --color-farm-green: #2E7D32;
+  --color-soft-green: #E8F5E9;
   
   --font-sans: "Inter", "system-ui", "-apple-system", "sans-serif";
 }
 
 @layer base {
   body {
-    @apply bg-clean-white text-gray-900;
+    @apply bg-white text-gray-900;
   }
 }
 
-.gradient-pink-white {
-  background: linear-gradient(135deg, #FF3377 0%, #FFFFFF 100%);
+/* Farming Theme Gradients */
+.gradient-green-white {
+  background: linear-gradient(135deg, #4CAF50 0%, #FFFFFF 100%);
+}
+
+.gradient-dark-green {
+  background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
 }
 
 .btn-primary {
-  @apply bg-cactus text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all active:scale-95;
+  @apply bg-cactus text-white px-6 py-2 rounded-full font-semibold transition-all active:scale-95 shadow-lg shadow-cactus/20;
+}
+
+.btn-primary:hover {
+  @apply bg-farm-green shadow-xl;
 }
 
 .glass-card {
   @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+}
+
+.section-heading {
+  @apply text-4xl md:text-5xl font-black text-farm-green tracking-tight;
 }
