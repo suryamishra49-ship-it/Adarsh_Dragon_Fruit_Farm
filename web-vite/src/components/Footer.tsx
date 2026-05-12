@@ -1,4 +1,4 @@
-import { MessageCircle, Youtube, MapPin } from 'lucide-react';
+import { MessageCircle, Video, MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -27,7 +27,7 @@ export default function Footer() {
                 <MessageCircle size={24} />
               </a>
               <a href="https://youtube.com/@yourchannel" className="text-red-500 hover:scale-110 transition-transform">
-                <Youtube size={24} />
+                <Video size={24} />
               </a>
               <a href="https://maps.google.com" className="text-blue-500 hover:scale-110 transition-transform">
                 <MapPin size={24} />
