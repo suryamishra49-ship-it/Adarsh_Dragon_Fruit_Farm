@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import guideRoutes from './routes/guide';
-import scannerRoutes from './routes/scanner';
 import marketplaceRoutes from './routes/marketplace';
 
 import authRoutes from './routes/auth';
@@ -27,7 +26,6 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/guide', guideRoutes);
-app.use('/api/scanner', scannerRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/orders', orderRoutes);

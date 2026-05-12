@@ -7,7 +7,6 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const guide_1 = __importDefault(require("./routes/guide"));
-const scanner_1 = __importDefault(require("./routes/scanner"));
 const marketplace_1 = __importDefault(require("./routes/marketplace"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const appointments_1 = __importDefault(require("./routes/appointments"));
@@ -26,7 +25,6 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/auth', auth_1.default);
 app.use('/api/guide', guide_1.default);
-app.use('/api/scanner', scanner_1.default);
 app.use('/api/marketplace', marketplace_1.default);
 app.use('/api/appointments', appointments_1.default);
 app.use('/api/orders', orders_1.default);
