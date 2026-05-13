@@ -111,7 +111,7 @@ export default function Marketplace() {
             className="w-full h-full object-cover opacity-5"
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-br from-pitaya/10 via-white to-cactus/5 -z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-pitaya/20 to-white -z-10"></div>
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
@@ -265,6 +265,42 @@ export default function Marketplace() {
                 </div>
               </div>
             </div>
+            
+            {/* ── REVIEW SYSTEM ── */}
+            <div className="bg-gray-50 border-t border-gray-100 p-12">
+              <h3 className="text-2xl font-black text-gray-900 mb-8">Customer Reviews</h3>
+              <div className="space-y-6 mb-8">
+                {/* Mock Review */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex text-yellow-400">
+                      {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill="currentColor" />)}
+                    </div>
+                    <span className="text-xs font-bold text-gray-400">- Ramesh Kumar</span>
+                  </div>
+                  <p className="text-gray-600">Excellent quality! The dragon fruit was incredibly sweet and fresh. Highly recommended.</p>
+                </div>
+              </div>
+
+              {localStorage.getItem('user') ? (
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <h4 className="font-bold text-gray-900 mb-4">Leave a Review</h4>
+                  <div className="flex items-center space-x-2 mb-4 text-gray-300">
+                    {[1, 2, 3, 4, 5].map(s => <Star key={s} size={24} className="hover:text-yellow-400 cursor-pointer transition-colors" />)}
+                  </div>
+                  <textarea 
+                    placeholder="Share your experience with this product..."
+                    className="w-full px-5 py-4 bg-gray-50 rounded-xl outline-none border-none focus:ring-2 focus:ring-cactus/20 min-h-[100px] mb-4"
+                  />
+                  <button className="btn-primary">Submit Review</button>
+                </div>
+              ) : (
+                <div className="text-center p-6 bg-white rounded-2xl border border-gray-100">
+                  <p className="text-gray-500 font-medium">Please <a href="/login" className="text-pitaya font-bold hover:underline">login</a> to leave a review.</p>
+                </div>
+              )}
+            </div>
+            
           </div>
         </div>
       )}

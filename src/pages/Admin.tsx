@@ -28,6 +28,18 @@ export default function Admin() {
     allowedPayments: ['cod', 'upi', 'card', 'netbanking']
   });
 
+  // Gallery Management
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [newImage, setNewImage] = useState('');
+
+  // Farm Settings
+  const [farmSettings, setFarmSettings] = useState({
+    farmName: 'Adarsh Dragon Fruit Farm',
+    contactEmail: 'contact@adarshfarm.com',
+    phone: '+91 9876543210',
+    maintenanceMode: false
+  });
+
   useEffect(() => {
     const stored = localStorage.getItem('user');
     if (stored) setUser(JSON.parse(stored));
@@ -40,6 +52,12 @@ export default function Admin() {
 
     const storedOrders = JSON.parse(localStorage.getItem('farm_orders') || '[]');
     setOrders(storedOrders);
+
+    const storedGallery = JSON.parse(localStorage.getItem('farm_gallery') || '["https://images.unsplash.com/photo-1527324688151-0e627063f2b1?w=800"]');
+    setGalleryImages(storedGallery);
+
+    const storedSettings = JSON.parse(localStorage.getItem('farm_settings') || 'null');
+    if (storedSettings) setFarmSettings(storedSettings);
   }, []);
 
   const handleUpdateOrderStatus = (orderId: string, status: string, trackingId?: string) => {
@@ -103,6 +121,35 @@ export default function Admin() {
     localStorage.setItem('verified_admins', JSON.stringify(updated));
   };
 
+  const handleAddImage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newImage) return;
+    const updated = [...galleryImages, newImage];
+    setGalleryImages(updated);
+    localStorage.setItem('farm_gallery', JSON.stringify(updated));
+    setNewImage('');
+  };
+
+  const handleRemoveImage = (index: number) => {
+    if (user?.email !== SUPER_ADMIN_EMAIL) {
+      alert('Only Super Admin can delete images.');
+      return;
+    }
+    const updated = galleryImages.filter((_, i) => i !== index);
+    setGalleryImages(updated);
+    localStorage.setItem('farm_gallery', JSON.stringify(updated));
+  };
+
+  const handleSaveSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (user?.email !== SUPER_ADMIN_EMAIL) {
+      alert('Only Super Admin can change settings.');
+      return;
+    }
+    localStorage.setItem('farm_settings', JSON.stringify(farmSettings));
+    alert('Settings saved successfully!');
+  };
+
   if (!user || user.role !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -146,6 +193,12 @@ export default function Admin() {
               <AdminTabBtn id="gallery" icon={<ImageIcon size={20}/>} label="Gallery" active={activeTab} set={setActiveTab} />
               <AdminTabBtn id="team" icon={<Users size={20}/>} label="Team Management" active={activeTab} set={setActiveTab} />
               <AdminTabBtn id="settings" icon={<Settings size={20}/>} label="Farm Settings" active={activeTab} set={setActiveTab} />
+              <div className="pt-4 mt-4 border-t border-gray-100">
+                <button onClick={() => window.location.href = '/history'} className="w-full flex items-center justify-between px-6 py-4 rounded-2xl font-bold text-gray-500 hover:bg-white hover:text-gray-900 transition-all">
+                  <div className="flex items-center space-x-3"><AlertCircle size={20}/> <span className="text-sm">Activity Logs</span></div>
+                  <ExternalLink size={16} className="text-gray-300" />
+                </button>
+              </div>
             </nav>
           </aside>
 
@@ -460,14 +513,47 @@ export default function Admin() {
 
             {/* GALLERY TAB */}
             {activeTab === 'gallery' && (
-              <div className="space-y-8 animate-in fade-in duration-500 text-center py-20">
-                <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-gray-100 max-w-xl mx-auto">
-                   <div className="bg-gray-50 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-gray-300">
-                    <ImageIcon size={40} />
+              <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Media Gallery</h1>
+                    <p className="text-gray-500 text-sm mt-1">Manage public farm photos and media.</p>
                   </div>
-                  <h2 className="text-2xl font-black text-gray-900 mb-2">Media Gallery</h2>
-                  <p className="text-gray-500 mb-8 font-medium">Manage your farm's photos and videos for the public gallery.</p>
-                  <button className="btn-primary px-10 py-4 opacity-50 cursor-not-allowed">Coming Soon</button>
+                </div>
+
+                {isSuperAdmin && (
+                  <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
+                    <form onSubmit={handleAddImage} className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex-grow relative">
+                        <ImageIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input 
+                          type="url" 
+                          placeholder="Paste image URL here..."
+                          value={newImage}
+                          onChange={(e) => setNewImage(e.target.value)}
+                          className="w-full pl-14 pr-6 py-4 bg-gray-50 rounded-2xl outline-none border-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
+                          required
+                        />
+                      </div>
+                      <button type="submit" className="btn-primary py-4 px-10 whitespace-nowrap">Add Image</button>
+                    </form>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {galleryImages.map((img, idx) => (
+                    <div key={idx} className="relative group rounded-[2rem] overflow-hidden shadow-sm aspect-square bg-gray-100">
+                      <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      {isSuperAdmin && (
+                        <button 
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute top-4 right-4 bg-white/90 p-2 rounded-xl text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white shadow-lg"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -542,6 +628,71 @@ export default function Admin() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* FARM SETTINGS TAB */}
+            {activeTab === 'settings' && (
+              <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Farm Settings</h1>
+                    <p className="text-gray-500 text-sm mt-1">Configure global platform preferences.</p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-[3rem] shadow-sm border border-gray-100 p-8 md:p-10">
+                  <form onSubmit={handleSaveSettings} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Platform Name</label>
+                        <input 
+                          type="text" 
+                          value={farmSettings.farmName}
+                          onChange={(e) => setFarmSettings({...farmSettings, farmName: e.target.value})}
+                          className="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-cactus/20"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Contact Email</label>
+                        <input 
+                          type="email" 
+                          value={farmSettings.contactEmail}
+                          onChange={(e) => setFarmSettings({...farmSettings, contactEmail: e.target.value})}
+                          className="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-cactus/20"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Support Phone Number</label>
+                        <input 
+                          type="text" 
+                          value={farmSettings.phone}
+                          onChange={(e) => setFarmSettings({...farmSettings, phone: e.target.value})}
+                          className="w-full px-5 py-4 bg-gray-50 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-cactus/20"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-400">Maintenance Mode</label>
+                        <div className="flex items-center space-x-4 pt-2">
+                          <button 
+                            type="button"
+                            onClick={() => setFarmSettings({...farmSettings, maintenanceMode: !farmSettings.maintenanceMode})}
+                            className={`w-14 h-8 rounded-full p-1 transition-colors ${farmSettings.maintenanceMode ? 'bg-red-500' : 'bg-gray-200'}`}
+                          >
+                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${farmSettings.maintenanceMode ? 'translate-x-6' : 'translate-x-0'}`} />
+                          </button>
+                          <span className="text-sm font-bold text-gray-500">
+                            {farmSettings.maintenanceMode ? 'Active (Site is down)' : 'Disabled'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-8 border-t border-gray-50 flex justify-end">
+                      <button type="submit" className="btn-primary py-4 px-12">Save Configuration</button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}

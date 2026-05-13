@@ -18,7 +18,7 @@ export default function Home() {
             alt="Background" 
             className="w-full h-full object-cover opacity-10"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-soft-green/50 via-white to-white"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-pitaya/20 to-white"></div>
         </div>
         
         {/* Animated Natural Shapes */}
