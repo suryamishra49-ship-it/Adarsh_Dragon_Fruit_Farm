@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Play, X } from 'lucide-react';
 
 interface Media {
@@ -15,18 +15,27 @@ export default function Gallery() {
   
   const isAdmin = user?.role === 'OWNER' || user?.role === 'ADMIN';
 
-  const [mediaItems, setMediaItems] = useState<Media[]>([
+  const initialMedia: Media[] = [
     { id: 1, type: 'image', url: 'https://images.unsplash.com/photo-1527324688151-0e627063f2b1?w=800', title: 'Farm Sunrise' },
     { id: 2, type: 'image', url: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=800', title: 'Pitaya Bloom' },
     { id: 3, type: 'image', url: 'https://images.unsplash.com/photo-1620127252536-03bdfcf6d5c3?w=800', title: 'Harvest Day' },
     { id: 4, type: 'video', url: 'https://assets.mixkit.co/videos/preview/mixkit-ripe-dragon-fruit-on-the-plant-34444-large.mp4', title: 'Growth Timelapse' },
     { id: 5, type: 'image', url: 'https://images.unsplash.com/photo-1550258114-189a79444811?w=800', title: 'Organic Soil' },
     { id: 6, type: 'image', url: 'https://images.unsplash.com/photo-1621506289937-9ccc14d599d0?w=800', title: 'Young Plants' },
-  ]);
+  ];
 
+  const [mediaItems, setMediaItems] = useState<Media[]>(initialMedia);
   const [showUpload, setShowUpload] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
+  useEffect(() => {
+    const storedGallery = JSON.parse(localStorage.getItem('farm_gallery') || 'null');
+    if (storedGallery && Array.isArray(storedGallery) && storedGallery.length > 0 && typeof storedGallery[0] === 'object') {
+      setMediaItems(storedGallery);
+    } else {
+      localStorage.setItem('farm_gallery', JSON.stringify(initialMedia));
+    }
+  }, []);
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +45,9 @@ export default function Gallery() {
       url: newUrl || 'https://images.unsplash.com/photo-1527324688151-0e627063f2b1?w=800',
       title: newTitle || 'New Activity'
     };
-    setMediaItems([newItem, ...mediaItems]);
+    const updated = [newItem, ...mediaItems];
+    setMediaItems(updated);
+    localStorage.setItem('farm_gallery', JSON.stringify(updated));
     setShowUpload(false);
     setNewTitle('');
     setNewUrl('');

@@ -5,6 +5,7 @@ import {
   Search, Calendar,
   ShieldCheck, Heart, Leaf
 } from 'lucide-react';
+import bgDragonFruit from '../assets/bg-dragon-fruit.png';
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-[-10]">
           <img 
-            src="/src/assets/bg-dragon-fruit.png" 
+            src={bgDragonFruit} 
             alt="Background" 
             className="w-full h-full object-cover opacity-10"
           />
@@ -70,7 +71,7 @@ export default function Home() {
           >
             <div className="relative z-10 p-4">
                <img 
-                src="/src/assets/bg-dragon-fruit.png" 
+                src={bgDragonFruit} 
                 alt="Organic Dragon Fruit Farm" 
                 className="rounded-[5rem] shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-1000 aspect-[4/5] object-cover border-8 border-white"
               />

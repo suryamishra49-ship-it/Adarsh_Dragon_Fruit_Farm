@@ -29,7 +29,7 @@ export default function Admin() {
   });
 
   // Gallery Management
-  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [newImage, setNewImage] = useState('');
 
   // Farm Settings
@@ -53,8 +53,18 @@ export default function Admin() {
     const storedOrders = JSON.parse(localStorage.getItem('farm_orders') || '[]');
     setOrders(storedOrders);
 
-    const storedGallery = JSON.parse(localStorage.getItem('farm_gallery') || '["https://images.unsplash.com/photo-1527324688151-0e627063f2b1?w=800"]');
-    setGalleryImages(storedGallery);
+    const storedGallery = JSON.parse(localStorage.getItem('farm_gallery') || '[]');
+    if (storedGallery.length > 0 && typeof storedGallery[0] === 'object') {
+      setGalleryImages(storedGallery);
+    } else {
+      // Create defaults
+      const defaults = [
+        { id: 1, type: 'image', url: 'https://images.unsplash.com/photo-1527324688151-0e627063f2b1?w=800', title: 'Farm Sunrise' },
+        { id: 2, type: 'image', url: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=800', title: 'Pitaya Bloom' }
+      ];
+      setGalleryImages(defaults);
+      localStorage.setItem('farm_gallery', JSON.stringify(defaults));
+    }
 
     const storedSettings = JSON.parse(localStorage.getItem('farm_settings') || 'null');
     if (storedSettings) setFarmSettings(storedSettings);
@@ -124,7 +134,13 @@ export default function Admin() {
   const handleAddImage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newImage) return;
-    const updated = [...galleryImages, newImage];
+    const newItem = {
+      id: Date.now(),
+      type: newImage.includes('mp4') ? 'video' : 'image',
+      url: newImage,
+      title: 'Admin Uploaded'
+    };
+    const updated = [newItem, ...galleryImages];
     setGalleryImages(updated);
     localStorage.setItem('farm_gallery', JSON.stringify(updated));
     setNewImage('');
@@ -542,8 +558,15 @@ export default function Admin() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {galleryImages.map((img, idx) => (
-                    <div key={idx} className="relative group rounded-[2rem] overflow-hidden shadow-sm aspect-square bg-gray-100">
-                      <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div key={img.id || idx} className="relative group rounded-[2rem] overflow-hidden shadow-sm aspect-square bg-gray-100">
+                      {img.type === 'video' ? (
+                        <video src={img.url} className="w-full h-full object-cover" muted />
+                      ) : (
+                        <img src={img.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                        <p className="text-white font-bold text-xs">{img.title}</p>
+                      </div>
                       {isSuperAdmin && (
                         <button 
                           onClick={() => handleRemoveImage(idx)}

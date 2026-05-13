@@ -4,6 +4,7 @@ import {
   Heart, Share2, ChevronRight, Plus, Minus,
   CreditCard, MapPin, CheckCircle2, Package
 } from 'lucide-react';
+import bgDragonFruit from '../assets/bg-dragon-fruit.png';
 
 interface Product {
   id: number;
@@ -106,7 +107,7 @@ export default function Marketplace() {
       <div className="relative pt-24 pb-32 overflow-hidden">
         <div className="absolute inset-0 z-[-1]">
           <img 
-            src="/src/assets/bg-dragon-fruit.png" 
+            src={bgDragonFruit} 
             alt="Background" 
             className="w-full h-full object-cover opacity-5"
           />
