@@ -13,11 +13,14 @@ export default function Visit() {
     e.preventDefault();
     const nameInput = (e.target as any).elements[2]?.value; // Full Name input
     
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    
     const visitData = {
       id: 'VIS-' + Date.now(),
       date: selectedDate,
       time: selectedTime,
       name: nameInput,
+      loginId: user?.loginId || 'Guest',
       status: 'Pending',
       createdAt: new Date().toISOString()
     };

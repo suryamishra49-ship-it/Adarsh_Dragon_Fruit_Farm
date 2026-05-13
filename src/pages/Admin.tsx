@@ -31,7 +31,6 @@ export default function Admin() {
 
   // Gallery Management
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
-  const [newImage, setNewImage] = useState('');
 
   // Farm Settings
   const [farmSettings, setFarmSettings] = useState({
@@ -83,6 +82,29 @@ export default function Admin() {
     
     const visit = updated.find(v => v.id === visitId);
     logActivity('APPOINTMENT_UPDATED', `Visit ${visitId} status changed to ${status} for ${visit?.name}`);
+
+    // Send notification to user
+    const users = JSON.parse(localStorage.getItem('users_db') || '[]'); // Mock user DB
+    const targetUser = users.find((u: any) => u.loginId === visit?.loginId);
+    if (targetUser) {
+      const notification = {
+        id: Date.now(),
+        type: status === 'Approved' ? 'success' : 'error',
+        title: `Visit ${status}`,
+        message: `Your farm visit for ${visit?.date} has been ${status.toLowerCase()}.`,
+        date: new Date().toISOString(),
+        read: false
+      };
+      targetUser.notifications = [notification, ...(targetUser.notifications || [])];
+      localStorage.setItem('users_db', JSON.stringify(users));
+      
+      // Also update current logged in user if they are the one
+      const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.loginId === targetUser.loginId) {
+        currentUser.notifications = targetUser.notifications;
+        localStorage.setItem('user', JSON.stringify(currentUser));
+      }
+    }
   };
 
   const handleUpdateOrderStatus = (orderId: string, status: string, trackingId?: string) => {
@@ -94,8 +116,26 @@ export default function Admin() {
     });
     setOrders(updated);
     localStorage.setItem('farm_orders', JSON.stringify(updated));
+    
+    const order = updated.find(o => o.id === orderId);
     if (selectedOrder?.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status, trackingId: trackingId !== undefined ? trackingId : selectedOrder.trackingId });
+    }
+
+    // Send notification to user
+    const users = JSON.parse(localStorage.getItem('users_db') || '[]');
+    const targetUser = users.find((u: any) => u.loginId === order?.userLoginId);
+    if (targetUser) {
+      const notification = {
+        id: Date.now(),
+        type: 'info',
+        title: `Order Updated`,
+        message: `Your order #${orderId} status is now ${status}. ${trackingId ? 'Tracking ID provided: ' + trackingId : ''}`,
+        date: new Date().toISOString(),
+        read: false
+      };
+      targetUser.notifications = [notification, ...(targetUser.notifications || [])];
+      localStorage.setItem('users_db', JSON.stringify(users));
     }
   };
 
@@ -146,19 +186,34 @@ export default function Admin() {
     localStorage.setItem('verified_admins', JSON.stringify(updated));
   };
 
-  const handleAddImage = (e: React.FormEvent) => {
+  const handleFileUpload = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAddImage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newImage) return;
-    const newItem = {
-      id: Date.now(),
-      type: newImage.includes('mp4') ? 'video' : 'image',
-      url: newImage,
-      title: 'Admin Uploaded'
-    };
-    const updated = [newItem, ...galleryImages];
-    setGalleryImages(updated);
-    localStorage.setItem('farm_gallery', JSON.stringify(updated));
-    setNewImage('');
+    const fileInput = (e.target as any).elements[0];
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    try {
+      const base64 = await handleFileUpload(file);
+      const newImg = { id: Date.now(), url: base64, title: file.name, type: 'image' };
+      const updated = [newImg, ...galleryImages];
+      setGalleryImages(updated);
+      localStorage.setItem('farm_gallery', JSON.stringify(updated));
+      fileInput.value = '';
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image.');
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -201,7 +256,6 @@ export default function Admin() {
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row gap-12">
           
-          {/* Sidebar Navigation */}
           <aside className="lg:w-80 space-y-2">
             <div className="p-8 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 mb-8">
               <div className="flex items-center space-x-4 mb-6">
@@ -234,17 +288,12 @@ export default function Admin() {
             </nav>
           </aside>
 
-          {/* Main Dashboard Area */}
           <main className="flex-grow">
             
-            {/* ORDERS TAB */}
             {activeTab === 'orders' && (
               <div className="space-y-8 animate-in fade-in duration-500">
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl font-black text-gray-900 tracking-tight">Farm Orders</h1>
-                  <div className="flex space-x-2">
-                    <button className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100 text-gray-400 hover:text-cactus transition-colors"><Search size={20}/></button>
-                  </div>
                 </div>
 
                 <div className="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
@@ -259,51 +308,42 @@ export default function Admin() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                      {orders.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="px-8 py-20 text-center text-gray-400 italic">No orders yet.</td>
+                      {orders.map((order) => (
+                        <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-8 py-6 text-sm font-black text-gray-900">{order.id}</td>
+                          <td className="px-8 py-6">
+                            <p className="text-sm font-bold text-gray-800">{order.userName}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{order.userEmail}</p>
+                          </td>
+                          <td className="px-8 py-6 text-sm font-black text-cactus">₹{order.total}</td>
+                          <td className="px-8 py-6">
+                            <StatusBadge status={order.status} />
+                          </td>
+                          <td className="px-8 py-6">
+                            <button 
+                              onClick={() => setSelectedOrder(order)}
+                              className="text-cactus font-black text-[10px] uppercase tracking-widest hover:underline flex items-center"
+                            >
+                              View Details <ChevronRight size={12} className="ml-1" />
+                            </button>
+                          </td>
                         </tr>
-                      ) : (
-                        orders.map((order) => (
-                          <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-8 py-6 text-sm font-black text-gray-900">{order.id}</td>
-                            <td className="px-8 py-6">
-                              <p className="text-sm font-bold text-gray-800">{order.userName}</p>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{order.userEmail}</p>
-                            </td>
-                            <td className="px-8 py-6 text-sm font-black text-cactus">₹{order.total}</td>
-                            <td className="px-8 py-6">
-                              <StatusBadge status={order.status} />
-                            </td>
-                            <td className="px-8 py-6">
-                              <button 
-                                onClick={() => setSelectedOrder(order)}
-                                className="text-cactus font-black text-[10px] uppercase tracking-widest hover:underline flex items-center"
-                              >
-                                View Details <ChevronRight size={12} className="ml-1" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
+                      ))}
                     </tbody>
                   </table>
                 </div>
 
-                {/* Order Detail Modal */}
                 {selectedOrder && (
                   <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
                     <div className="bg-white w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
                       <div className="flex justify-between items-center mb-8">
                         <div>
                           <h2 className="text-2xl font-black text-gray-900">Order {selectedOrder.id}</h2>
-                          <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Placed on {new Date(selectedOrder.date).toLocaleDateString()}</p>
                         </div>
                         <button onClick={() => setSelectedOrder(null)} className="text-gray-400 hover:text-gray-900"><X size={24}/></button>
                       </div>
 
                       <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar space-y-8">
-                        {/* Customer Info */}
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-4">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Customer Details</h4>
@@ -327,7 +367,6 @@ export default function Admin() {
                           </div>
                         </div>
 
-                        {/* Items */}
                         <div className="space-y-4">
                           <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Ordered Items</h4>
                           <div className="bg-gray-50 rounded-3xl p-6 space-y-4">
@@ -344,7 +383,6 @@ export default function Admin() {
                           </div>
                         </div>
 
-                        {/* Order Management Actions */}
                         <div className="space-y-6 pt-6 border-t border-gray-100">
                           <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Manage Status & Tracking</h4>
                           <div className="flex flex-wrap gap-3">
@@ -360,12 +398,11 @@ export default function Admin() {
                               <div className="flex gap-2">
                                 <input 
                                   type="text" 
-                                  placeholder="Enter Tracking Number (e.g. DTDC-123)..."
+                                  placeholder="Enter Tracking Number..."
                                   defaultValue={selectedOrder.trackingId}
                                   onBlur={(e) => handleUpdateOrderStatus(selectedOrder.id, selectedOrder.status, e.target.value)}
                                   className="flex-grow px-5 py-3 bg-gray-50 rounded-xl outline-none text-sm font-bold"
                                 />
-                                <button className="bg-gray-900 text-white px-4 rounded-xl font-black text-xs uppercase tracking-widest">Update</button>
                               </div>
                             </div>
                           )}
@@ -377,7 +414,6 @@ export default function Admin() {
               </div>
             )}
 
-            {/* PRODUCTS TAB */}
             {activeTab === 'products' && (
               <div className="space-y-8 animate-in fade-in duration-500">
                 <div className="flex items-center justify-between">
@@ -417,20 +453,16 @@ export default function Admin() {
                           </td>
                           <td className="px-8 py-6">
                             <span className="font-black text-pitaya">₹{p.price}</span>
-                            <span className="text-[10px] text-gray-400 font-bold ml-1">/{p.unit}</span>
                           </td>
                           <td className="px-8 py-6">
-                            <div className="flex space-x-2">
-                              <button className="p-2 text-gray-400 hover:text-cactus transition-colors"><Edit3 size={18}/></button>
-                              {isSuperAdmin && (
-                                <button 
-                                  onClick={() => handleDeleteProduct(p.id)}
-                                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                >
-                                  <Trash2 size={18}/>
-                                </button>
-                              )}
-                            </div>
+                            {isSuperAdmin && (
+                              <button 
+                                onClick={() => handleDeleteProduct(p.id)}
+                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 size={18}/>
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -438,7 +470,6 @@ export default function Admin() {
                   </table>
                 </div>
 
-                {/* Add Product Modal */}
                 {showAddProduct && (
                   <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
                     <div className="bg-white w-full max-w-xl rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300">
@@ -479,7 +510,23 @@ export default function Admin() {
                               <option>pot</option>
                               <option>piece</option>
                             </select>
-                          </div>
+                           </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-black uppercase tracking-widest text-gray-400">Product Image</label>
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const base64 = await handleFileUpload(file);
+                                setNewProduct({...newProduct, image: base64});
+                              }
+                            }}
+                            className="w-full px-5 py-3 bg-gray-50 rounded-xl outline-none border-none focus:ring-2 focus:ring-cactus/20"
+                            required
+                          />
                         </div>
                         <div className="space-y-2">
                           <label className="text-xs font-black uppercase tracking-widest text-gray-400">Description</label>
@@ -559,15 +606,13 @@ export default function Admin() {
                       <div className="flex-grow relative">
                         <ImageIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                         <input 
-                          type="url" 
-                          placeholder="Paste image URL here..."
-                          value={newImage}
-                          onChange={(e) => setNewImage(e.target.value)}
+                          type="file" 
+                          accept="image/*"
                           className="w-full pl-14 pr-6 py-4 bg-gray-50 rounded-2xl outline-none border-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
                           required
                         />
                       </div>
-                      <button type="submit" className="btn-primary py-4 px-10 whitespace-nowrap">Add Image</button>
+                      <button type="submit" className="btn-primary py-4 px-10 whitespace-nowrap">Upload Photo</button>
                     </form>
                   </div>
                 )}

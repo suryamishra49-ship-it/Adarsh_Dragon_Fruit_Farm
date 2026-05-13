@@ -78,6 +78,7 @@ export default function Marketplace() {
 
     const order = {
       id: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+      userLoginId: user.loginId,
       userEmail: user.email,
       userName: address.name || user.name,
       items: cart,

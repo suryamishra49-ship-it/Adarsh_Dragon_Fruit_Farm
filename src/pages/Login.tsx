@@ -8,16 +8,34 @@ const SUPER_ADMIN_EMAIL = 'surya.mishra49@gmail.com';
 export default function Login() {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!loginId || !password) return;
+    setLoading(true);
+    
+    // Simulate sending OTP
+    setTimeout(() => {
+      setShowOtp(true);
+      setLoading(false);
+      logActivity('AUTH', `OTP requested for ${loginId}`);
+    }, 1000);
+  };
+
+  const handleVerifyAndLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp !== '123456') {
+      alert('Invalid OTP. For demo purposes use 123456');
+      return;
+    }
     setLoading(true);
 
     // Simulated Auth Logic
     setTimeout(() => {
-      // Check if loginId is in the verified admins list (from localStorage)
       const verifiedAdmins = JSON.parse(localStorage.getItem('verified_admins') || '[]');
       const isVerifiedAdmin = verifiedAdmins.includes(loginId);
       const isSuperAdmin = loginId === SUPER_ADMIN_EMAIL;
@@ -30,13 +48,24 @@ export default function Login() {
         email: loginId.includes('@') ? loginId : '',
         mobile: !loginId.includes('@') ? loginId : '',
         loginId: loginId,
-        role: role
+        role: role,
+        notifications: []
       };
 
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('token', 'mock_jwt_token_' + Date.now());
 
-      logActivity('LOGIN', `User logged in using ${loginId.includes('@') ? 'email' : 'mobile'}: ${loginId}`, user);
+      // Persist to users_db for notifications
+      const usersDb = JSON.parse(localStorage.getItem('users_db') || '[]');
+      const userIndex = usersDb.findIndex((u: any) => u.loginId === loginId);
+      if (userIndex > -1) {
+        usersDb[userIndex] = { ...usersDb[userIndex], ...user };
+      } else {
+        usersDb.push(user);
+      }
+      localStorage.setItem('users_db', JSON.stringify(usersDb));
+
+      logActivity('LOGIN', `User verified and logged in: ${loginId}`, user);
 
       if (role === 'admin') {
         navigate('/admin');
@@ -49,7 +78,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-      {/* Left Side: Visuals */}
+      {/* ... existing left side ... */}
       <div className="hidden lg:flex bg-farm-green items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/src/assets/bg-dragon-fruit.png')] bg-cover bg-center opacity-40"></div>
         <div className="relative z-10 p-12 text-center text-white">
@@ -61,7 +90,6 @@ export default function Login() {
             Join the largest community of dragon fruit farmers in Pratapgarh.
           </p>
         </div>
-        {/* Decorative Circles */}
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-cactus/20 rounded-full blur-3xl"></div>
       </div>
@@ -76,62 +104,95 @@ export default function Login() {
               </div>
               <span className="font-black tracking-tighter">ADARSH FARM</span>
             </Link>
-            <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">Welcome Back</h1>
-            <p className="text-gray-500 font-medium">Please enter your details to sign in.</p>
+            <h1 className="text-4xl font-black text-gray-900 mb-2 tracking-tight">
+              {showOtp ? 'Verify OTP' : 'Welcome Back'}
+            </h1>
+            <p className="text-gray-500 font-medium">
+              {showOtp ? `Enter the 6-digit code sent to ${loginId}` : 'Please enter your details to sign in.'}
+            </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-black uppercase tracking-widest text-gray-400">Email or Mobile Number</label>
-              <div className="relative group">
-                {loginId.includes('@') ? (
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
-                ) : (
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
-                )}
-                <input 
-                  type="text" 
-                  value={loginId}
-                  onChange={(e) => setLoginId(e.target.value)}
-                  placeholder="Email or Mobile"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
-                  required
-                />
+          {!showOtp ? (
+            <form onSubmit={handleSendOtp} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-black uppercase tracking-widest text-gray-400">Email or Mobile Number</label>
+                <div className="relative group">
+                  {loginId.includes('@') ? (
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
+                  ) : (
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
+                  )}
+                  <input 
+                    type="text" 
+                    value={loginId}
+                    onChange={(e) => setLoginId(e.target.value)}
+                    placeholder="Email or Mobile"
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-black uppercase tracking-widest text-gray-400">Password</label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
-                  required
-                />
+              <div className="space-y-2">
+                <label className="text-sm font-black uppercase tracking-widest text-gray-400">Password</label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
+                  <input 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between py-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="checkbox" className="w-5 h-5 rounded-lg border-gray-200 text-cactus focus:ring-cactus" />
-                <span className="text-sm font-bold text-gray-600">Remember me</span>
-              </label>
-              <button type="button" className="text-sm font-bold text-cactus hover:underline">Forgot password?</button>
-            </div>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full btn-primary py-5 text-lg shadow-2xl shadow-cactus/20 flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                <span>{loading ? 'Sending OTP...' : 'Get OTP'}</span>
+                {!loading && <ArrowRight size={20} />}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyAndLogin} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-black uppercase tracking-widest text-gray-400">Enter OTP (123456)</label>
+                <div className="relative group">
+                  <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
+                  <input 
+                    type="text" 
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="000000"
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium tracking-[0.5em] text-center text-2xl"
+                    required
+                  />
+                </div>
+              </div>
 
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full btn-primary py-5 text-lg shadow-2xl shadow-cactus/20 flex items-center justify-center space-x-2 disabled:opacity-50"
-            >
-              <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
-              {!loading && <ArrowRight size={20} />}
-            </button>
-          </form>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full btn-primary py-5 text-lg shadow-2xl shadow-cactus/20 flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                <span>{loading ? 'Verifying...' : 'Verify & Login'}</span>
+                {!loading && <ArrowRight size={20} />}
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={() => setShowOtp(false)}
+                className="w-full text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Change details
+              </button>
+            </form>
+          )}
 
           <div className="mt-12 p-6 bg-soft-green/30 rounded-3xl border border-cactus/10 text-center">
             <p className="text-sm font-medium text-gray-600">Don't have an account?</p>
