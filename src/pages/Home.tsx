@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import { 
   ChevronRight, Star, ShoppingCart, 
   Search, Calendar,
-  ShieldCheck, Heart, Leaf
+  ShieldCheck, Heart, Leaf, Sprout
 } from 'lucide-react';
+import HarvestCalculator from '../components/HarvestCalculator';
 import bgDragonFruit from '../assets/bg-dragon-fruit.png';
 
 export default function Home() {
@@ -143,6 +144,59 @@ export default function Home() {
               desc="Buy premium cuttings or sell your harvest directly to buyers."
               color="bg-white text-farm-green border border-farm-green/10"
             />
+          </div>
+        </div>
+      </section>
+
+      {/* ── HARVEST CALCULATOR SECTION ── */}
+      <section className="py-32 bg-white relative overflow-hidden">
+        {/* Background Accents */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-pitaya/5 rounded-full blur-3xl -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-cactus/5 rounded-full blur-3xl -ml-48 -mb-48" />
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="inline-flex items-center space-x-2 bg-pitaya/10 px-4 py-2 rounded-full text-pitaya font-bold text-xs mb-8 uppercase tracking-widest">
+                <Sprout size={14} />
+                <span>Smart Agriculture Tools</span>
+              </div>
+              <h2 className="text-5xl md:text-6xl font-black text-gray-900 mb-8 tracking-tighter leading-tight">
+                Predict Your <br />
+                <span className="text-gradient-pitaya">Perfect Harvest</span>
+              </h2>
+              <p className="text-xl text-gray-600 mb-8 leading-relaxed font-medium">
+                Timing is everything in dragon fruit farming. Use our scientific calculator to predict the optimal harvest window based on your flowering dates.
+              </p>
+              
+              <ul className="space-y-4 mb-10">
+                {[
+                  "Accurate 30-35 day ripening window",
+                  "Real-time countdown to harvest",
+                  "Optimal sugar content timing",
+                  "Mobile-friendly field companion"
+                ].map((item, idx) => (
+                  <li key={idx} className="flex items-center gap-3 text-gray-700 font-bold">
+                    <div className="w-6 h-6 bg-cactus/20 rounded-full flex items-center justify-center text-cactus">
+                      <ChevronRight size={14} />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+            >
+              <HarvestCalculator />
+            </motion.div>
           </div>
         </div>
       </section>

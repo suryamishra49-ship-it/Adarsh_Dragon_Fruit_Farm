@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Plus, Play, X } from 'lucide-react';
+import { Plus, Play, X, Image as ImageIcon, Cherry } from 'lucide-react';
+import VarietyGallery from '../components/VarietyGallery';
 
 interface Media {
   id: number;
@@ -28,6 +29,7 @@ export default function Gallery() {
   const [showUpload, setShowUpload] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
+  const [activeTab, setActiveTab] = useState<'life' | 'varieties'>('varieties');
   useEffect(() => {
     const storedGallery = JSON.parse(localStorage.getItem('farm_gallery') || 'null');
     if (storedGallery && Array.isArray(storedGallery) && storedGallery.length > 0 && typeof storedGallery[0] === 'object') {
@@ -55,17 +57,39 @@ export default function Gallery() {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <div className="flex justify-between items-end mb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
-            Farm Activities <span className="text-pitaya">Gallery</span>
+          <h1 className="text-6xl md:text-8xl font-black text-gray-900 mb-6 tracking-tighter leading-none">
+            Farm <span className="text-gradient-pitaya">Showcase</span>
           </h1>
-          <p className="text-gray-600">Peek into the daily life at Adarsh Dragon Fruit Farm.</p>
+          <p className="text-xl text-gray-500 font-medium max-w-lg">Explore our diverse dragon fruit varieties and peek into the daily life at Adarsh Farm.</p>
         </div>
-        {isAdmin && (
+        
+        <div className="flex bg-gray-100 p-2 rounded-[2rem] w-fit">
+          <button 
+            onClick={() => setActiveTab('varieties')}
+            className={`flex items-center gap-3 px-8 py-4 rounded-[1.5rem] font-bold transition-all ${
+              activeTab === 'varieties' ? 'bg-white text-gray-900 shadow-xl' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <Cherry size={20} />
+            <span>Varieties</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('life')}
+            className={`flex items-center gap-3 px-8 py-4 rounded-[1.5rem] font-bold transition-all ${
+              activeTab === 'life' ? 'bg-white text-gray-900 shadow-xl' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <ImageIcon size={20} />
+            <span>Farm Life</span>
+          </button>
+        </div>
+
+        {activeTab === 'life' && isAdmin && (
           <button 
             onClick={() => setShowUpload(true)}
-            className="flex items-center space-x-2 bg-cactus text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-cactus/20 hover:scale-105 transition-transform"
+            className="flex items-center space-x-2 bg-cactus text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-cactus/20 hover:scale-105 transition-transform"
           >
             <Plus size={20} />
             <span>Upload Media</span>
@@ -73,28 +97,32 @@ export default function Gallery() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mediaItems.map((item) => (
-          <div key={item.id} className="group relative overflow-hidden rounded-2xl bg-gray-100 aspect-video shadow-md hover:shadow-xl transition-all">
-            {item.type === 'image' ? (
-              <img src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            ) : (
-              <div className="relative w-full h-full">
-                <video src={item.url} className="w-full h-full object-cover" muted loop onMouseOver={e => e.currentTarget.play()} onMouseOut={e => e.currentTarget.pause()} />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-all">
-                  <div className="bg-white/30 backdrop-blur-md p-4 rounded-full">
-                    <Play className="text-white fill-white" size={32} />
+      {activeTab === 'varieties' ? (
+        <VarietyGallery />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {mediaItems.map((item) => (
+            <div key={item.id} className="group relative overflow-hidden rounded-[3rem] bg-gray-100 aspect-video shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100">
+              {item.type === 'image' ? (
+                <img src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              ) : (
+                <div className="relative w-full h-full">
+                  <video src={item.url} className="w-full h-full object-cover" muted loop onMouseOver={e => e.currentTarget.play()} onMouseOut={e => e.currentTarget.pause()} />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-all">
+                    <div className="bg-white/30 backdrop-blur-md p-6 rounded-full">
+                      <Play className="text-white fill-white" size={32} />
+                    </div>
                   </div>
                 </div>
+              )}
+              <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                <p className="text-white text-xl font-black">{item.title}</p>
+                <p className="text-white/70 text-xs font-bold uppercase tracking-widest mt-1">{item.type === 'image' ? 'Photograph' : 'Video'}</p>
               </div>
-            )}
-            <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
-              <p className="text-white font-bold">{item.title}</p>
-              <p className="text-white/80 text-xs">{item.type === 'image' ? 'Photograph' : 'Video'}</p>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Upload Modal */}
       {showUpload && (
