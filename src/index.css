@@ -1,42 +1,54 @@
 @import "tailwindcss";
 
 @theme {
-  --color-pitaya: #FF3377;
-  --color-cactus: #4CAF50;
+  --color-pitaya: #FF1493;
+  --color-pitaya-light: #FF69B4;
+  --color-cactus: #00C853;
   --color-clean-white: #FFFFFF;
-  --color-farm-green: #2E7D32;
-  --color-soft-green: #E8F5E9;
+  --color-farm-green: #1B5E20;
+  --color-soft-green: #F1F8E9;
   
-  --font-sans: "Inter", "system-ui", "-apple-system", "sans-serif";
+  --font-sans: "Outfit", "Inter", "system-ui", "-apple-system", "sans-serif";
 }
 
 @layer base {
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-soft-green text-gray-900 font-sans selection:bg-pitaya/30;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-farm-green via-cactus to-farm-green;
+  }
+  
+  .text-gradient-pitaya {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-pitaya to-pitaya-light;
   }
 }
 
 /* Farming Theme Gradients */
 .gradient-green-white {
-  background: linear-gradient(135deg, #4CAF50 0%, #FFFFFF 100%);
+  background: linear-gradient(135deg, #00C853 0%, #FFFFFF 100%);
 }
 
 .gradient-dark-green {
-  background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+  background: linear-gradient(135deg, #1B5E20 0%, #00C853 100%);
 }
 
 .btn-primary {
-  @apply bg-cactus text-white px-6 py-2 rounded-full font-semibold transition-all active:scale-95 shadow-lg shadow-cactus/20;
+  @apply bg-gradient-to-r from-cactus to-farm-green text-white px-8 py-3 rounded-full font-bold transition-all active:scale-95 shadow-lg shadow-cactus/30 hover:shadow-cactus/50 hover:-translate-y-1;
 }
 
-.btn-primary:hover {
-  @apply bg-farm-green shadow-xl;
+.btn-pitaya {
+  @apply bg-gradient-to-r from-pitaya to-pitaya-light text-white px-8 py-3 rounded-full font-bold transition-all active:scale-95 shadow-lg shadow-pitaya/30 hover:shadow-pitaya/50 hover:-translate-y-1;
 }
 
 .glass-card {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+  @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/5 rounded-[2rem];
 }
 
 .section-heading {
-  @apply text-4xl md:text-5xl font-black text-farm-green tracking-tight;
+  @apply text-5xl md:text-7xl font-black text-gray-900 tracking-tighter;
 }

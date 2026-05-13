@@ -44,18 +44,18 @@ export default function Home() {
               <span>Premium High-Yield Dragon Fruit Farm</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-black text-gray-900 leading-[0.95] mb-8 tracking-tighter">
-              Premium <span className="text-cactus">Quality</span> <br />
-              <span className="text-farm-green">Farming</span> Solutions
+              Premium <span className="text-gradient">Quality</span> <br />
+              <span className="text-gradient-pitaya">Dragon Fruit</span> Farming
             </h1>
             <p className="text-xl text-gray-600 mb-12 max-w-lg leading-relaxed font-medium">
               Join the agricultural revolution with Adarsh Farm. We provide high-yield dragon fruit cuttings, expert guides, and fresh harvests directly to you.
             </p>
-            <div className="flex flex-wrap gap-6">
-              <Link to="/marketplace" className="btn-primary py-5 px-10 text-xl flex items-center group">
+            <div className="flex flex-wrap gap-6 mt-10">
+              <Link to="/marketplace" className="btn-pitaya text-xl flex items-center group">
                 <span>Shop Fresh</span>
-                <ChevronRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="ml-2 group-hover:translate-x-2 transition-transform" />
               </Link>
-              <Link to="/visit" className="bg-white hover:bg-soft-green text-farm-green border border-cactus/20 py-5 px-10 rounded-full font-bold text-xl transition-all flex items-center shadow-sm">
+              <Link to="/visit" className="bg-white hover:bg-soft-green text-farm-green border-2 border-farm-green/10 py-3 px-10 rounded-full font-bold text-xl transition-all flex items-center shadow-lg hover:shadow-xl hover:-translate-y-1">
                 <Calendar className="mr-2 text-cactus" size={20} />
                 <span>Book Farm Visit</span>
               </Link>
@@ -110,9 +110,9 @@ export default function Home() {
       {/* ── CORE SERVICES (Green Theme) ── */}
       <section className="py-32 bg-soft-green/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tight">Our Farming Ecosystem</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">Empowering dragon fruit cultivators with modern tech and organic wisdom.</p>
+          <div className="text-center mb-20 relative z-10">
+            <h2 className="text-5xl md:text-7xl font-black text-gray-900 mb-6 tracking-tighter">Our <span className="text-gradient">Ecosystem</span></h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-xl font-medium">Empowering dragon fruit cultivators with modern tech and organic wisdom.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -144,18 +144,18 @@ export default function Home() {
       {/* ── CALL TO ACTION ── */}
       <section className="py-32 relative overflow-hidden bg-white">
         <div className="container mx-auto px-4">
-          <div className="bg-farm-green rounded-[4rem] p-12 md:p-24 text-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-[100px]"></div>
-            <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-[100px]"></div>
+          <div className="bg-gradient-to-br from-farm-green via-cactus to-farm-green rounded-[4rem] p-12 md:p-24 text-center relative overflow-hidden shadow-2xl shadow-farm-green/30 border border-white/20 backdrop-blur-lg">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-pitaya/30 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/20 rounded-full blur-[100px]"></div>
             
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-7xl font-black text-white mb-8 tracking-tighter">Start Your Farming Journey</h2>
-              <p className="text-white/70 text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
+              <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter drop-shadow-lg">Start Your Farming Journey</h2>
+              <p className="text-white/90 text-xl mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
                 Join our community of thousands of successful dragon fruit farmers. Get access to AI tools, expert guides, and a direct marketplace.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-6">
-                <Link to="/register" className="bg-white text-farm-green py-5 px-12 rounded-full font-black text-xl hover:scale-105 transition-transform shadow-xl">Join Now</Link>
-                <Link to="/visit" className="bg-white/10 hover:bg-white/20 text-white border border-white/20 py-5 px-12 rounded-full font-bold text-xl transition-all">Book Visit</Link>
+                <Link to="/register" className="btn-pitaya text-xl px-12 hover:scale-105">Join Now</Link>
+                <Link to="/visit" className="bg-white/10 hover:bg-white/20 text-white border border-white/30 py-3 px-12 rounded-full font-bold text-xl transition-all backdrop-blur-md hover:-translate-y-1">Book Visit</Link>
               </div>
             </div>
           </div>
