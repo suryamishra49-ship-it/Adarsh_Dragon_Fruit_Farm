@@ -40,6 +40,8 @@ export default function Admin() {
     maintenanceMode: false
   });
 
+  const [visits, setVisits] = useState<any[]>([]);
+
   useEffect(() => {
     const stored = localStorage.getItem('user');
     if (stored) setUser(JSON.parse(stored));
@@ -68,7 +70,20 @@ export default function Admin() {
 
     const storedSettings = JSON.parse(localStorage.getItem('farm_settings') || 'null');
     if (storedSettings) setFarmSettings(storedSettings);
+
+    const storedVisits = JSON.parse(localStorage.getItem('farm_visits') || '[]');
+    setVisits(storedVisits);
   }, []);
+
+  const handleUpdateVisitStatus = (visitId: string, status: string) => {
+    const updated = visits.map(v => v.id === visitId ? { ...v, status } : v);
+    setVisits(updated);
+    localStorage.setItem('farm_visits', JSON.stringify(updated));
+    
+    const visit = updated.find(v => v.id === visitId);
+    const { logActivity } = require('../utils/logger');
+    logActivity('APPOINTMENT_UPDATED', `Visit ${visitId} status changed to ${status} for ${visit?.name}`);
+  };
 
   const handleUpdateOrderStatus = (orderId: string, status: string, trackingId?: string) => {
     const updated = orders.map(o => {
@@ -207,6 +222,7 @@ export default function Admin() {
               <AdminTabBtn id="orders" icon={<ShoppingBag size={20}/>} label="Orders" active={activeTab} set={setActiveTab} count={orders.filter(o => o.status === 'Pending').length} />
               <AdminTabBtn id="products" icon={<Tag size={20}/>} label="Products" active={activeTab} set={setActiveTab} />
               <AdminTabBtn id="gallery" icon={<ImageIcon size={20}/>} label="Gallery" active={activeTab} set={setActiveTab} />
+              <AdminTabBtn id="visits" icon={<Calendar size={20}/>} label="Visits" active={activeTab} set={setActiveTab} count={visits.filter(v => v.status === 'Pending').length} />
               <AdminTabBtn id="team" icon={<Users size={20}/>} label="Team Management" active={activeTab} set={setActiveTab} />
               <AdminTabBtn id="settings" icon={<Settings size={20}/>} label="Farm Settings" active={activeTab} set={setActiveTab} />
               <div className="pt-4 mt-4 border-t border-gray-100">
@@ -719,6 +735,70 @@ export default function Admin() {
                 </div>
               </div>
             )}
+             {/* VISITS TAB */}
+             {activeTab === 'visits' && (
+               <div className="space-y-8 animate-in fade-in duration-500">
+                 <div className="flex items-center justify-between">
+                   <h1 className="text-3xl font-black text-gray-900 tracking-tight">Visit Requests</h1>
+                 </div>
+
+                 <div className="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
+                   <table className="w-full text-left">
+                     <thead>
+                       <tr className="border-b border-gray-50 bg-gray-50/50">
+                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Visitor</th>
+                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Date & Time</th>
+                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Status</th>
+                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Action</th>
+                       </tr>
+                     </thead>
+                     <tbody className="divide-y divide-gray-50">
+                       {visits.length === 0 ? (
+                         <tr>
+                           <td colSpan={4} className="px-8 py-20 text-center text-gray-400 italic">No visit requests yet.</td>
+                         </tr>
+                       ) : (
+                         visits.map((visit) => (
+                           <tr key={visit.id}>
+                             <td className="px-8 py-6 font-bold text-gray-900">{visit.name}</td>
+                             <td className="px-8 py-6 text-sm text-gray-600">{visit.date} at {visit.time}</td>
+                             <td className="px-8 py-6">
+                               <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                 visit.status === 'Approved' ? 'bg-green-50 text-green-600' :
+                                 visit.status === 'Denied' ? 'bg-red-50 text-red-600' :
+                                 'bg-yellow-50 text-yellow-600'
+                               }`}>
+                                 {visit.status}
+                               </span>
+                             </td>
+                             <td className="px-8 py-6">
+                               <div className="flex space-x-2">
+                                 {visit.status === 'Pending' && (
+                                   <>
+                                     <button 
+                                       onClick={() => handleUpdateVisitStatus(visit.id, 'Approved')}
+                                       className="px-4 py-2 bg-cactus text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                     >
+                                       Approve
+                                     </button>
+                                     <button 
+                                       onClick={() => handleUpdateVisitStatus(visit.id, 'Denied')}
+                                       className="px-4 py-2 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
+                                     >
+                                       Deny
+                                     </button>
+                                   </>
+                                 )}
+                               </div>
+                             </td>
+                           </tr>
+                         ))
+                       )}
+                     </tbody>
+                   </table>
+                 </div>
+               </div>
+             )}
           </main>
         </div>
       </div>

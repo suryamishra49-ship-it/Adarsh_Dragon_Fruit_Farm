@@ -10,6 +10,23 @@ export default function Visit() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const nameInput = (e.target as any).elements[2]?.value; // Full Name input
+    
+    const visitData = {
+      id: 'VIS-' + Date.now(),
+      date: selectedDate,
+      time: selectedTime,
+      name: nameInput,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    };
+
+    const existingVisits = JSON.parse(localStorage.getItem('farm_visits') || '[]');
+    localStorage.setItem('farm_visits', JSON.stringify([visitData, ...existingVisits]));
+
+    const { logActivity } = require('../utils/logger');
+    logActivity('APPOINTMENT_CREATED', `New visit request from ${nameInput} for ${selectedDate} at ${selectedTime}`);
+
     setSubmitted(true);
   };
 
@@ -56,7 +73,7 @@ export default function Visit() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-800">Location</h3>
-                <p className="text-gray-600">Adarsh Dragon Fruit Farm, Near Green Valley, Maharashtra</p>
+                <p className="text-gray-600">Adarsh Dragon Fruit Farm, Matiyara Mahamdapur Gadwara Pratapgarh Uttar Pradesh</p>
               </div>
             </div>
 

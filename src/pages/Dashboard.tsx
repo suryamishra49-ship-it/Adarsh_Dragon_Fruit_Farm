@@ -110,9 +110,22 @@ export default function Dashboard() {
                         <div>
                           <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Tracking Information</h4>
                           {order.trackingId ? (
-                            <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
-                              <span className="font-bold text-gray-900">{order.trackingId}</span>
-                              <button className="text-cactus font-black text-[10px] uppercase tracking-widest hover:underline">Track Link</button>
+                            <div className="space-y-4">
+                              <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between">
+                                <span className="font-bold text-gray-900">{order.trackingId}</span>
+                                <button className="text-cactus font-black text-[10px] uppercase tracking-widest hover:underline">Track Link</button>
+                              </div>
+                              <div className="space-y-3 pl-2">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-1.5 h-1.5 bg-cactus rounded-full"></div>
+                                  <p className="text-[10px] font-bold text-gray-800">Departed from Farm Hub</p>
+                                  <p className="text-[9px] text-gray-400 italic ml-auto">{new Date(order.date).toLocaleDateString()}</p>
+                                </div>
+                                <div className="flex items-center space-x-3 opacity-50">
+                                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+                                  <p className="text-[10px] font-bold text-gray-800">Arrived at Local Sorting Center</p>
+                                </div>
+                              </div>
                             </div>
                           ) : (
                             <p className="text-sm font-medium text-gray-400 italic">Tracking ID will be provided once shipped.</p>
@@ -120,9 +133,14 @@ export default function Dashboard() {
                         </div>
                         <div>
                           <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Items Summary</h4>
-                          <p className="text-sm font-bold text-gray-800">
-                            {order.items.map((it: any) => `${it.quantity}x ${it.name}`).join(', ')}
-                          </p>
+                          <div className="space-y-2">
+                            {order.items.map((it: any) => (
+                              <div key={it.id} className="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100">
+                                <span className="text-xs font-bold text-gray-800">{it.quantity}x {it.name}</span>
+                                <span className="text-xs font-black text-cactus">₹{it.price * it.quantity}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>

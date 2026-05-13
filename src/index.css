@@ -12,8 +12,12 @@
 
 @layer base {
   body {
-    @apply bg-white text-gray-900 font-sans selection:bg-pitaya/30;
+    @apply bg-white text-gray-900 font-sans selection:bg-pitaya/30 transition-colors duration-300;
     -webkit-font-smoothing: antialiased;
+  }
+
+  html.dark body {
+    @apply bg-gray-950 text-gray-100;
   }
 }
 
@@ -32,8 +36,16 @@
   background: linear-gradient(135deg, #4CAF50 0%, #FFFFFF 100%);
 }
 
+.dark .gradient-green-white {
+  background: linear-gradient(135deg, #1B5E20 0%, #030712 100%);
+}
+
 .gradient-pink-white {
   background: linear-gradient(180deg, #FF3377 0%, #FFFFFF 100%);
+}
+
+.dark .gradient-pink-white {
+  background: linear-gradient(180deg, #880E4F 0%, #030712 100%);
 }
 
 .btn-primary {
@@ -48,6 +60,51 @@
   @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/5 rounded-[2rem];
 }
 
+.dark .glass-card {
+  @apply bg-gray-900/70 border-white/10 shadow-black/20;
+}
+
 .section-heading {
   @apply text-5xl md:text-7xl font-black text-gray-900 tracking-tighter;
 }
+
+.dark .section-heading {
+  @apply text-white;
+}
+
+/* Specific Dark Mode Fixes */
+.dark body {
+  background-color: #030712 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .bg-white {
+  background-color: #111827 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #030712 !important;
+}
+
+.dark .text-gray-900 {
+  color: #f3f4f6 !important;
+}
+
+.dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+.dark .border-gray-100, .dark .border-gray-200 {
+  border-color: #1f2937 !important;
+}
+
+.dark .shadow-sm {
+  box-shadow: none !important;
+}
+
+.dark .bg-soft-green\/30 {
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+
+

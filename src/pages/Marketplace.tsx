@@ -270,34 +270,51 @@ export default function Marketplace() {
             {/* ── REVIEW SYSTEM ── */}
             <div className="bg-gray-50 border-t border-gray-100 p-12">
               <h3 className="text-2xl font-black text-gray-900 mb-8">Customer Reviews</h3>
+              
               <div className="space-y-6 mb-8">
-                {/* Mock Review */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="flex text-yellow-400">
-                      {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill="currentColor" />)}
+                {JSON.parse(localStorage.getItem(`reviews_${selectedProduct.id}`) || '[]').length === 0 ? (
+                  <p className="text-gray-400 italic">No reviews yet. Be the first to review!</p>
+                ) : (
+                  JSON.parse(localStorage.getItem(`reviews_${selectedProduct.id}`) || '[]').map((rev: any, i: number) => (
+                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex text-yellow-400">
+                          {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill={s <= rev.rating ? 'currentColor' : 'none'} />)}
+                        </div>
+                        <span className="text-xs font-bold text-gray-400">- {rev.userName}</span>
+                      </div>
+                      <p className="text-gray-600">{rev.comment}</p>
                     </div>
-                    <span className="text-xs font-bold text-gray-400">- Ramesh Kumar</span>
-                  </div>
-                  <p className="text-gray-600">Excellent quality! The dragon fruit was incredibly sweet and fresh. Highly recommended.</p>
-                </div>
+                  ))
+                )}
               </div>
 
               {localStorage.getItem('user') ? (
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const user = JSON.parse(localStorage.getItem('user') || '{}');
+                  const comment = (e.target as any).elements[0].value;
+                  const rating = 5; // Simplified for now
+                  const newReview = { userName: user.name, comment, rating, date: new Date().toISOString() };
+                  const reviews = JSON.parse(localStorage.getItem(`reviews_${selectedProduct.id}`) || '[]');
+                  localStorage.setItem(`reviews_${selectedProduct.id}`, JSON.stringify([newReview, ...reviews]));
+                  (e.target as any).reset();
+                  setSelectedProduct({...selectedProduct}); // Trigger re-render
+                }} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                   <h4 className="font-bold text-gray-900 mb-4">Leave a Review</h4>
-                  <div className="flex items-center space-x-2 mb-4 text-gray-300">
-                    {[1, 2, 3, 4, 5].map(s => <Star key={s} size={24} className="hover:text-yellow-400 cursor-pointer transition-colors" />)}
+                  <div className="flex items-center space-x-2 mb-4 text-yellow-400">
+                    {[1, 2, 3, 4, 5].map(s => <Star key={s} size={24} fill="currentColor" className="cursor-pointer" />)}
                   </div>
                   <textarea 
                     placeholder="Share your experience with this product..."
                     className="w-full px-5 py-4 bg-gray-50 rounded-xl outline-none border-none focus:ring-2 focus:ring-cactus/20 min-h-[100px] mb-4"
+                    required
                   />
-                  <button className="btn-primary">Submit Review</button>
-                </div>
+                  <button type="submit" className="btn-primary">Submit Review</button>
+                </form>
               ) : (
                 <div className="text-center p-6 bg-white rounded-2xl border border-gray-100">
-                  <p className="text-gray-500 font-medium">Please <a href="/login" className="text-pitaya font-bold hover:underline">login</a> to leave a review.</p>
+                  <p className="text-gray-500 font-medium">Please <Link to="/login" className="text-pitaya font-bold hover:underline">login</Link> to leave a review.</p>
                 </div>
               )}
             </div>

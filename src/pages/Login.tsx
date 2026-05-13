@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, ShieldCheck, Leaf } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ShieldCheck, Leaf, Phone } from 'lucide-react';
+import { logActivity } from '../utils/logger';
 
 const SUPER_ADMIN_EMAIL = 'surya.mishra49@gmail.com';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,22 +17,26 @@ export default function Login() {
 
     // Simulated Auth Logic
     setTimeout(() => {
-      // Check if email is in the verified admins list (from localStorage)
+      // Check if loginId is in the verified admins list (from localStorage)
       const verifiedAdmins = JSON.parse(localStorage.getItem('verified_admins') || '[]');
-      const isVerifiedAdmin = verifiedAdmins.includes(email);
-      const isSuperAdmin = email === SUPER_ADMIN_EMAIL;
+      const isVerifiedAdmin = verifiedAdmins.includes(loginId);
+      const isSuperAdmin = loginId === SUPER_ADMIN_EMAIL;
 
       const role = (isSuperAdmin || isVerifiedAdmin) ? 'admin' : 'user';
       
       const user = {
-        id: '1',
-        name: isSuperAdmin ? 'Super Admin' : (role === 'admin' ? 'Farm Manager' : 'Happy Farmer'),
-        email: email,
+        id: Date.now().toString(),
+        name: isSuperAdmin ? 'Super Admin' : (role === 'admin' ? 'Farm Manager' : 'Farmer'),
+        email: loginId.includes('@') ? loginId : '',
+        mobile: !loginId.includes('@') ? loginId : '',
+        loginId: loginId,
         role: role
       };
 
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', 'mock_jwt_token_123');
+      localStorage.setItem('token', 'mock_jwt_token_' + Date.now());
+
+      logActivity('LOGIN', `User logged in using ${loginId.includes('@') ? 'email' : 'mobile'}: ${loginId}`, user);
 
       if (role === 'admin') {
         navigate('/admin');
@@ -53,7 +58,7 @@ export default function Login() {
           </div>
           <h2 className="text-5xl font-black mb-6 tracking-tighter">Grow With Us</h2>
           <p className="text-xl text-white/80 max-w-md mx-auto font-medium">
-            Join the largest community of dragon fruit farmers in Maharashtra.
+            Join the largest community of dragon fruit farmers in Pratapgarh.
           </p>
         </div>
         {/* Decorative Circles */}
@@ -77,14 +82,18 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-black uppercase tracking-widest text-gray-400">Email Address</label>
+              <label className="text-sm font-black uppercase tracking-widest text-gray-400">Email or Mobile Number</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
+                {loginId.includes('@') ? (
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
+                ) : (
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={20} />
+                )}
                 <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  type="text" 
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
+                  placeholder="Email or Mobile"
                   className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
                   required
                 />
@@ -131,7 +140,7 @@ export default function Login() {
           
           <div className="mt-8 flex items-center justify-center space-x-2 text-gray-400">
             <ShieldCheck size={16} />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Secure Admin Authentication</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest">Secure Authentication</span>
           </div>
         </div>
       </div>

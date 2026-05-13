@@ -127,7 +127,12 @@ export default function Home() {
             <ServiceCard 
               to="/scanner" 
               icon={<Search size={32} />} 
-              title="AI Doctor" 
+              title={
+                <div className="flex items-center gap-2">
+                  <span>AI Doctor</span>
+                  <span className="bg-white/20 text-[10px] font-black px-2 py-0.5 rounded-full">FREE</span>
+                </div>
+              }
               desc="Snap a photo and use AI to instantly identify diseases and deficiencies."
               color="bg-cactus text-white shadow-lg shadow-cactus/20"
             />
