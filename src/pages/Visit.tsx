@@ -1,5 +1,6 @@
 import { Calendar, Clock, MapPin, Users, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
+import { logActivity } from '../utils/logger';
 
 export default function Visit() {
   const [selectedDate, setSelectedDate] = useState('');
@@ -24,7 +25,6 @@ export default function Visit() {
     const existingVisits = JSON.parse(localStorage.getItem('farm_visits') || '[]');
     localStorage.setItem('farm_visits', JSON.stringify([visitData, ...existingVisits]));
 
-    const { logActivity } = require('../utils/logger');
     logActivity('APPOINTMENT_CREATED', `New visit request from ${nameInput} for ${selectedDate} at ${selectedTime}`);
 
     setSubmitted(true);

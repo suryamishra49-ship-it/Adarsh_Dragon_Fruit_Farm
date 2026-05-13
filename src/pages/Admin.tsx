@@ -4,8 +4,9 @@ import {
   Settings, Plus, Trash2, ExternalLink, 
   AlertCircle, ShieldAlert,
   Search, Mail, UserPlus, X, Tag, Edit3,
-  MapPin, Phone
+  MapPin, Phone, Calendar
 } from 'lucide-react';
+import { logActivity } from '../utils/logger';
 
 const SUPER_ADMIN_EMAIL = 'surya.mishra49@gmail.com';
 
@@ -81,7 +82,6 @@ export default function Admin() {
     localStorage.setItem('farm_visits', JSON.stringify(updated));
     
     const visit = updated.find(v => v.id === visitId);
-    const { logActivity } = require('../utils/logger');
     logActivity('APPOINTMENT_UPDATED', `Visit ${visitId} status changed to ${status} for ${visit?.name}`);
   };
 
