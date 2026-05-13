@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, Leaf, LogOut, Bell, CheckCircle, AlertCircle, Info
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,8 +16,7 @@ export default function Navbar() {
     if (stored) setUser(JSON.parse(stored));
   }, [location]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     setUser(null);

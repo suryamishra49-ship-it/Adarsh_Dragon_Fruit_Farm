@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, ShieldCheck, Leaf, Phone } from 'lucide-react';
 import { logActivity } from '../utils/logger';
-import { supabase } from '../lib/supabase';
 
 const SUPER_ADMIN_EMAIL = 'surya.mishra49@gmail.com';
 
@@ -12,61 +11,52 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginId || !password) return;
     setLoading(true);
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: loginId,
-        password: password,
-      });
-
-      if (error) throw error;
-
-      const user = data.user;
+    // Simulated Auth Logic
+    setTimeout(() => {
       const verifiedAdmins = JSON.parse(localStorage.getItem('verified_admins') || '[]');
-      const isVerifiedAdmin = verifiedAdmins.includes(user.email);
-      const isSuperAdmin = user.email === SUPER_ADMIN_EMAIL;
+      const isVerifiedAdmin = verifiedAdmins.includes(loginId);
+      const isSuperAdmin = loginId === SUPER_ADMIN_EMAIL;
 
       const role = (isSuperAdmin || isVerifiedAdmin) ? 'admin' : 'user';
       
-      const userData = {
-        id: user.id,
-        name: user.user_metadata?.full_name || (isSuperAdmin ? 'Super Admin' : 'Farmer'),
-        email: user.email,
-        loginId: user.email,
+      const user = {
+        id: Date.now().toString(),
+        name: isSuperAdmin ? 'Super Admin' : (role === 'admin' ? 'Farm Manager' : 'Farmer'),
+        email: loginId.includes('@') ? loginId : '',
+        mobile: !loginId.includes('@') ? loginId : '',
+        loginId: loginId,
         role: role,
         notifications: []
       };
 
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Preserve notifications from users_db
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', 'mock_jwt_token_' + Date.now());
+
+      // Persist to users_db for notifications
       const usersDb = JSON.parse(localStorage.getItem('users_db') || '[]');
-      const userIdx = usersDb.findIndex((u: any) => u.loginId === user.email);
-      if (userIdx > -1) {
-        userData.notifications = usersDb[userIdx].notifications || [];
-        usersDb[userIdx] = userData;
+      const userIndex = usersDb.findIndex((u: any) => u.loginId === loginId);
+      if (userIndex > -1) {
+        user.notifications = usersDb[userIndex].notifications || [];
+        usersDb[userIndex] = { ...usersDb[userIndex], ...user };
       } else {
-        usersDb.push(userData);
+        usersDb.push(user);
       }
       localStorage.setItem('users_db', JSON.stringify(usersDb));
 
-      logActivity('LOGIN', `User logged in via Supabase: ${user.email}`, userData);
+      logActivity('LOGIN', `User logged in: ${loginId}`, user);
 
       if (role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/dashboard');
       }
-    } catch (error: any) {
-      console.error('Login error:', error.message);
-      alert(error.message);
-    } finally {
       setLoading(false);
-    }
+    }, 1500);
   };
 
   return (

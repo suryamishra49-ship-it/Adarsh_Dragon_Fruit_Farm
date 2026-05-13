@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+
+const API = 'https://adarsh-dragon-fruit-farm.onrender.com';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -15,24 +16,19 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          },
-        },
+      const res = await fetch(`${API}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        alert('Registration successful! Please check your email for confirmation.');
+      const data = await res.json();
+      if (data.success) {
         navigate('/login');
+      } else {
+        setError(data.message || 'Registration failed. Please try again.');
       }
-    } catch (error: any) {
-      setError(error.message || 'Registration failed. Please try again.');
+    } catch {
+      setError('Could not connect to server.');
     } finally {
       setLoading(false);
     }
