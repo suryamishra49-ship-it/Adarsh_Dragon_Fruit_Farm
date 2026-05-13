@@ -40,34 +40,21 @@ export default function History() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const user = (() => {
-    try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
-  })();
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) { navigate('/login'); return; }
+    const user = (() => {
+      try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
+    })();
 
-    const endpoint = user?.role === 'OWNER'
-      ? `${API}/api/activity/logs`
-      : `${API}/api/activity/logs/user`;
+    if (!user) { navigate('/login'); return; }
 
-    fetch(endpoint, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => {
-        setLogs(d.logs || d.activities || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        // fallback: show mock history for demo
-        setLogs([
-          { id: 1, action: 'LOGIN', details: 'User signed in successfully.', createdAt: new Date().toISOString() },
-          { id: 2, action: 'APPOINTMENT_CREATED', details: 'Appointment booked for farm visit.', createdAt: new Date(Date.now() - 86400000).toISOString() },
-          { id: 3, action: 'ORDER_PLACED', details: 'Order #42 placed from the marketplace.', createdAt: new Date(Date.now() - 172800000).toISOString() },
-        ]);
-        setError('Showing demo data — live API unavailable.');
-        setLoading(false);
-      });
+    const allLogs = JSON.parse(localStorage.getItem('farm_activity_logs') || '[]');
+    
+    if (user.role === 'admin') {
+      setLogs(allLogs);
+    } else {
+      setLogs(allLogs.filter((l: any) => l.user?.email === (user.email || user.loginId)));
+    }
+    setLoading(false);
   }, []);
 
   const actionTypes = ['ALL', ...Array.from(new Set(logs.map(l => l.action)))];
