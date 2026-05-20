@@ -62,7 +62,7 @@ export default function Gallery() {
         description: 'American Beauty flowers opened fully tonight! Over 300 massive white blossoms illuminated the twilight. A spectacular sight.',
         tag: 'Bloom Alert',
         date: new Date(Date.now() - 86400000 * 2).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-        image: 'https://images.unsplash.com/photo-1507290439931-a861b5a38200?w=800',
+        image: 'https://images.unsplash.com/photo-1508780709619-79562169bc51?w=800',
         likes: 67,
         comments: [
           { id: 102, userName: 'Sunita Devi', text: 'Breathtaking flowers! Truly nature at its best.', date: '1 day ago' }
@@ -85,7 +85,7 @@ export default function Gallery() {
       try {
         const parsed = JSON.parse(stored);
         const hasOldPlaceholders = parsed.some((item: any) => 
-          item.image && item.image.includes('1508780709619-79562169bc51')
+          item.image && item.image.includes('1507290439931-a861b5a38200')
         );
         if (parsed.length > 0 && !hasOldPlaceholders) {
           setJournalItems(parsed);

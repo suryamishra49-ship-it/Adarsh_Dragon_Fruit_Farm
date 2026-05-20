@@ -49,10 +49,10 @@ export default function Marketplace() {
       p.image && (
         p.image.includes('550258114-189a79444811') || 
         p.image.includes('1620127252536-03bdfcf6d5c3') ||
-        p.image.includes('1557800636-894a64c1696f') ||
-        p.image.includes('1585320806297-9794b3e4eeae') ||
-        p.image.includes('1621506289937-9ccc14d599d0') ||
-        p.image.includes('1416879595882-3373a0480b5b')
+        p.image.includes('1509587584298-0f3b3a3a1797') ||
+        p.image.includes('1534531173927-aeb928d54385') ||
+        p.image.includes('1520302817595-88509dec7ec7') ||
+        p.image.includes('1463936575829-25148e1db1b8')
       )
     );
     if (stored.length > 0 && !hasOldPlaceholders) {
@@ -100,7 +100,7 @@ export default function Marketplace() {
           name: 'American Beauty Grafted Sapling', 
           price: 280, 
           unit: 'pot', 
-          image: 'https://images.unsplash.com/photo-1509587584298-0f3b3a3a1797?w=800', 
+          image: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=800', 
           description: 'Rooted and grafted American Beauty variety plant. Known for vigorous growing habit and heavy yields of magenta fruit.', 
           category: 'Live Plant', 
           allowedPayments: ['cod', 'upi'],
@@ -112,7 +112,7 @@ export default function Marketplace() {
           name: 'Ecuadorian Palora Yellow Rooted Cutting', 
           price: 450, 
           unit: 'pot', 
-          image: 'https://images.unsplash.com/photo-1534531173927-aeb928d54385?w=800', 
+          image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800', 
           description: 'Healthy rooted cutting of the sweet yellow dragon fruit variety. Requires trellising support.', 
           category: 'Live Plant', 
           allowedPayments: ['upi'],
@@ -124,7 +124,7 @@ export default function Marketplace() {
           name: 'Vietnamese White Plant cutting', 
           price: 99, 
           unit: 'piece', 
-          image: 'https://images.unsplash.com/photo-1520302817595-88509dec7ec7?w=800', 
+          image: 'https://images.unsplash.com/photo-1621506289937-9ccc14d599d0?w=800', 
           description: 'Standard commercial white variety cuttings. Clean-cut and hardened off, ready for rooting in sandy loam soil.', 
           category: 'Live Plant', 
           allowedPayments: ['cod', 'upi'],
@@ -136,7 +136,7 @@ export default function Marketplace() {
           name: 'Organic Pitaya Soil Mix (Neem + Cow Manure)', 
           price: 199, 
           unit: 'bag', 
-          image: 'https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=800', 
+          image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800', 
           description: 'Special formulation of organic leaf mold, well-composted cow dung, bone meal, and neem cake for robust pitaya growth.', 
           category: 'Live Plant', 
           allowedPayments: ['cod', 'upi'],

@@ -144,14 +144,6 @@ export default function Visit() {
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Info Side */}
           <div className="lg:col-span-5 space-y-8">
-            <div className="overflow-hidden rounded-[2.5rem] border border-slate-100 dark:border-slate-850 shadow-sm aspect-[16/10]">
-              <img 
-                src="/images/hero_main.png" 
-                alt="Adarsh Dragon Fruit Farm" 
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
             <div className="glass-card p-8 border border-slate-100 dark:border-slate-850">
               <div className="bg-cactus/10 p-3 rounded-2xl inline-block mb-6 text-cactus">
                 <MapPin size={24} />
