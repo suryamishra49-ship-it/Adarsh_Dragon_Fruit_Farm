@@ -1,110 +1,108 @@
 @import "tailwindcss";
 
 @theme {
-  --color-pitaya: #FF3377;
-  --color-cactus: #4CAF50;
+  --color-pitaya: #FF1A66;
+  --color-pitaya-hover: #E6004F;
+  --color-cactus: #3BA540;
+  --color-cactus-hover: #2E8A33;
   --color-clean-white: #FFFFFF;
-  --color-farm-green: #2E7D32;
-  --color-soft-green: #E8F5E9;
+  --color-farm-green: #1E6B24;
+  --color-soft-green: #F0FDF4;
+  --color-soft-pink: #FFF1F6;
   
   --font-sans: "Outfit", "Inter", "system-ui", "-apple-system", "sans-serif";
 }
 
 @layer base {
   body {
-    @apply bg-white text-gray-900 font-sans selection:bg-pitaya/30 transition-colors duration-300;
+    @apply bg-slate-50 text-slate-800 font-sans selection:bg-pitaya/20 transition-colors duration-300;
     -webkit-font-smoothing: antialiased;
   }
 
   html.dark body {
-    @apply bg-gray-950 text-gray-100;
+    @apply bg-slate-950 text-slate-100;
   }
 }
 
 @layer utilities {
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-farm-green to-cactus;
+  .text-gradient-green {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-farm-green via-cactus to-emerald-500;
   }
   
   .text-gradient-pitaya {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-pitaya to-[#FF69B4];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-pitaya via-pink-500 to-rose-400;
   }
 }
 
-/* Farming Theme Gradients */
-.gradient-green-white {
-  background: linear-gradient(135deg, #4CAF50 0%, #FFFFFF 100%);
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700;
 }
 
-.dark .gradient-green-white {
-  background: linear-gradient(135deg, #1B5E20 0%, #030712 100%);
+/* Glassmorphism Cards */
+.glass-card {
+  @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/50 shadow-xl shadow-slate-100/40 dark:shadow-black/20 rounded-[2.5rem];
 }
 
-.gradient-pink-white {
-  background: linear-gradient(180deg, #FF3377 0%, #FFFFFF 100%);
+.glass-card-hover {
+  @apply transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/50 dark:hover:shadow-black/40;
 }
 
-.dark .gradient-pink-white {
-  background: linear-gradient(180deg, #880E4F 0%, #030712 100%);
-}
-
+/* Custom Buttons */
 .btn-primary {
-  @apply bg-cactus text-white px-8 py-3 rounded-full font-bold transition-all active:scale-95 shadow-lg shadow-cactus/30 hover:shadow-cactus/50 hover:bg-[#3d8c40];
+  @apply bg-cactus text-white px-8 py-3.5 rounded-full font-bold transition-all active:scale-95 shadow-lg shadow-cactus/20 hover:shadow-xl hover:shadow-cactus/30 hover:bg-cactus-hover cursor-pointer flex items-center justify-center gap-2;
 }
 
 .btn-pitaya {
-  @apply bg-pitaya text-white px-8 py-3 rounded-full font-bold transition-all active:scale-95 shadow-lg shadow-pitaya/30 hover:shadow-pitaya/50 hover:bg-[#e62e6b];
+  @apply bg-pitaya text-white px-8 py-3.5 rounded-full font-bold transition-all active:scale-95 shadow-lg shadow-pitaya/20 hover:shadow-xl hover:shadow-pitaya/30 hover:bg-pitaya-hover cursor-pointer flex items-center justify-center gap-2;
 }
 
-.glass-card {
-  @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl shadow-black/5 rounded-[2rem];
+.btn-secondary {
+  @apply bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 px-8 py-3.5 rounded-full font-bold transition-all active:scale-95 shadow-md hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer flex items-center justify-center gap-2;
 }
 
-.dark .glass-card {
-  @apply bg-gray-900/70 border-white/10 shadow-black/20;
+/* Active badges */
+.badge-pitaya {
+  @apply bg-soft-pink text-pitaya px-4 py-1.5 rounded-full text-xs font-bold border border-pitaya/10;
 }
 
-.section-heading {
-  @apply text-5xl md:text-7xl font-black text-gray-900 tracking-tighter;
+.badge-cactus {
+  @apply bg-soft-green text-cactus px-4 py-1.5 rounded-full text-xs font-bold border border-cactus/10;
 }
 
-.dark .section-heading {
-  @apply text-white;
-}
-
-/* Specific Dark Mode Fixes */
+/* Dark Mode Helper Fixes */
 .dark body {
   background-color: #030712 !important;
-  color: #f3f4f6 !important;
+  color: #f8fafc !important;
 }
 
 .dark .bg-white {
-  background-color: #111827 !important;
+  background-color: #0b0f19 !important;
 }
 
-.dark .bg-gray-50 {
+.dark .bg-gray-50, .dark .bg-slate-50 {
   background-color: #030712 !important;
 }
 
 .dark .text-gray-900 {
-  color: #f3f4f6 !important;
+  color: #f8fafc !important;
 }
 
-.dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-400 {
-  color: #9ca3af !important;
+.dark .text-gray-600 {
+  color: #94a3b8 !important;
 }
 
-.dark .border-gray-100, .dark .border-gray-200 {
-  border-color: #1f2937 !important;
+.dark .text-gray-500 {
+  color: #64748b !important;
 }
 
-.dark .shadow-sm {
-  box-shadow: none !important;
+.dark .border-gray-100, .dark .border-gray-200, .dark .border-cactus\/5 {
+  border-color: #1e293b !important;
 }
-
-.dark .bg-soft-green\/30 {
-  background-color: rgba(76, 175, 80, 0.1) !important;
-}
-
-
-

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { 
   ShoppingCart, Star, Search, X, 
   Heart, Share2, ChevronRight, Plus, Minus,
-  CreditCard, MapPin, CheckCircle2, Package
+  CreditCard, MapPin, CheckCircle2, Package,
+  Percent, Truck, AlertCircle, Info, QrCode
 } from 'lucide-react';
-import bgDragonFruit from '../assets/bg-dragon-fruit.png';
+import { Link } from 'react-router-dom';
 
 interface Product {
   id: number;
@@ -14,7 +15,9 @@ interface Product {
   image: string;
   description: string;
   category: 'Fruit' | 'Live Plant';
-  allowedPayments?: string[]; // ['cod', 'upi', 'card', 'netbanking']
+  allowedPayments?: string[];
+  schedule: string; // pre-order shipping date or immediate delivery
+  stock: number;
 }
 
 interface CartItem extends Product {
@@ -30,8 +33,14 @@ export default function Marketplace() {
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'address' | 'payment' | 'success'>('cart');
+  const [checkoutStep, setCheckoutStep] = useState<'cart' | 'address' | 'payment' | 'upi-scan' | 'success'>('cart');
   const [address, setAddress] = useState({ name: '', phone: '', city: '', pincode: '', street: '' });
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'upi'>('cod');
+  
+  // Pincode validation & delivery calculator
+  const [pincodeQuery, setPincodeQuery] = useState('');
+  const [deliveryStatus, setDeliveryStatus] = useState<string | null>(null);
+  const [isUpiSimulating, setIsUpiSimulating] = useState(false);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('farm_products') || '[]');
@@ -39,10 +48,93 @@ export default function Marketplace() {
       setProducts(stored);
     } else {
       const initial: Product[] = [
-        { id: 1, name: 'Premium Red Dragon Fruit', price: 150, unit: 'kg', image: 'https://images.unsplash.com/photo-1527324688151-0e627063f2b1?w=800', description: 'Fresh and sweet red pitaya.', category: 'Fruit', allowedPayments: ['cod', 'upi', 'card', 'netbanking'] },
-        { id: 2, name: 'Dragon Fruit Grafted Plant', price: 450, unit: 'pot', image: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=800', description: 'Strong, healthy grafted plant.', category: 'Live Plant', allowedPayments: ['upi', 'card'] },
+        { 
+          id: 1, 
+          name: 'Premium Red Dragon Fruit (Magenta Flesh)', 
+          price: 180, 
+          unit: 'kg', 
+          image: '/images/red_fruit.png', 
+          description: 'Sweet, freshly-harvested organic red pitaya. High in antioxidants and rich in flavor.', 
+          category: 'Fruit', 
+          allowedPayments: ['cod', 'upi'],
+          schedule: 'Pre-order: Next harvest shipping July 5th',
+          stock: 250
+        },
+        { 
+          id: 2, 
+          name: 'Palora Yellow Dragon Fruit (Sweetest)', 
+          price: 350, 
+          unit: 'kg', 
+          image: 'https://images.unsplash.com/photo-1550258114-189a79444811?w=800', 
+          description: 'The sweetest dragon fruit variety in the world, sourced from premium Ecuadorian stock. Extremely rich and floral.', 
+          category: 'Fruit', 
+          allowedPayments: ['cod', 'upi'],
+          schedule: 'Pre-order: Next harvest shipping July 12th',
+          stock: 80
+        },
+        { 
+          id: 3, 
+          name: 'Premium White Dragon Fruit (Refreshing)', 
+          price: 140, 
+          unit: 'kg', 
+          image: 'https://images.unsplash.com/photo-1620127252536-03bdfcf6d5c3?w=800', 
+          description: 'Crisp and refreshing white flesh dragon fruit. Low sugar content, ideal for refreshing summer salads.', 
+          category: 'Fruit', 
+          allowedPayments: ['cod', 'upi'],
+          schedule: 'Pre-order: Next harvest shipping July 5th',
+          stock: 300
+        },
+        { 
+          id: 4, 
+          name: 'American Beauty Grafted Sapling', 
+          price: 280, 
+          unit: 'pot', 
+          image: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=800', 
+          description: 'Rooted and grafted American Beauty variety plant. Known for vigorous growing habit and heavy yields of magenta fruit.', 
+          category: 'Live Plant', 
+          allowedPayments: ['cod', 'upi'],
+          schedule: 'Immediate Delivery (Ready for planting)',
+          stock: 120
+        },
+        { 
+          id: 5, 
+          name: 'Ecuadorian Palora Yellow Rooted Cutting', 
+          price: 450, 
+          unit: 'pot', 
+          image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800', 
+          description: 'Healthy rooted cutting of the sweet yellow dragon fruit variety. Requires trellising support.', 
+          category: 'Live Plant', 
+          allowedPayments: ['upi'],
+          schedule: 'Immediate Delivery (Shipped in organic soil mix)',
+          stock: 45
+        },
+        { 
+          id: 6, 
+          name: 'Vietnamese White Plant cutting', 
+          price: 99, 
+          unit: 'piece', 
+          image: 'https://images.unsplash.com/photo-1621506289937-9ccc14d599d0?w=800', 
+          description: 'Standard commercial white variety cuttings. Clean-cut and hardened off, ready for rooting in sandy loam soil.', 
+          category: 'Live Plant', 
+          allowedPayments: ['cod', 'upi'],
+          schedule: 'Immediate Delivery (hardened cuttings)',
+          stock: 500
+        },
+        { 
+          id: 7, 
+          name: 'Organic Pitaya Soil Mix (Neem + Cow Manure)', 
+          price: 199, 
+          unit: 'bag', 
+          image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800', 
+          description: 'Special formulation of organic leaf mold, well-composted cow dung, bone meal, and neem cake for robust pitaya growth.', 
+          category: 'Live Plant', 
+          allowedPayments: ['cod', 'upi'],
+          schedule: 'Immediate Delivery (5kg bag)',
+          stock: 150
+        }
       ];
       setProducts(initial);
+      localStorage.setItem('farm_products', JSON.stringify(initial));
     }
   }, []);
 
@@ -67,9 +159,24 @@ export default function Marketplace() {
     }).filter(item => item.quantity > 0));
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  // Tier-based discount calculation (15% off plants if user buys 10+ total plants)
+  const totalPlantsQuantity = cart
+    .filter(item => item.category === 'Live Plant')
+    .reduce((sum, item) => sum + item.quantity, 0);
 
-  const handlePlaceOrder = () => {
+  const plantDiscountEligibility = totalPlantsQuantity >= 10;
+  
+  const plantSubtotal = cart
+    .filter(item => item.category === 'Live Plant')
+    .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+  const plantDiscountAmount = plantDiscountEligibility ? Math.round(plantSubtotal * 0.15) : 0;
+  
+  const rawSubtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartTotal = rawSubtotal - plantDiscountAmount;
+
+  // Handle final order placing
+  const handlePlaceOrder = (simulatedPaymentMethod: 'cod' | 'upi') => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (!user.email) {
       alert('Please login to place an order.');
@@ -84,7 +191,7 @@ export default function Marketplace() {
       items: cart,
       total: cartTotal,
       address,
-      paymentMethod: checkoutStep === 'payment' ? 'cod' : '', // Mock for now
+      paymentMethod: simulatedPaymentMethod === 'upi' ? 'UPI Pre-paid' : 'COD (Cash on Delivery)',
       status: 'Pending',
       trackingId: '',
       date: new Date().toISOString()
@@ -92,9 +199,67 @@ export default function Marketplace() {
 
     const existingOrders = JSON.parse(localStorage.getItem('farm_orders') || '[]');
     localStorage.setItem('farm_orders', JSON.stringify([order, ...existingOrders]));
+
+    // Log the action
+    const logActivity = (type: string, desc: string) => {
+      const logs = JSON.parse(localStorage.getItem('farm_activity_logs') || '[]');
+      logs.unshift({ id: Date.now(), type, desc, date: new Date().toISOString() });
+      localStorage.setItem('farm_activity_logs', JSON.stringify(logs));
+    };
+    logActivity('ORDER_CREATED', `Placed order ${order.id} totaling ₹${cartTotal}`);
+
+    // Send order confirmation notification
+    const users = JSON.parse(localStorage.getItem('users_db') || '[]');
+    const idx = users.findIndex((u: any) => u.loginId === user.loginId);
+    if (idx > -1) {
+      const notify = {
+        id: Date.now(),
+        type: 'success',
+        title: 'Order Booked!',
+        message: `Order #${order.id} for ₹${cartTotal} is confirmed. Tracking updates will be posted here.`,
+        date: new Date().toISOString(),
+        read: false
+      };
+      users[idx].notifications = [notify, ...(users[idx].notifications || [])];
+      localStorage.setItem('users_db', JSON.stringify(users));
+      
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      currentUser.notifications = users[idx].notifications;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+    }
     
     setCheckoutStep('success');
     setCart([]);
+  };
+
+  const startUpiFlow = () => {
+    setCheckoutStep('upi-scan');
+  };
+
+  const simulateUpiPayment = () => {
+    setIsUpiSimulating(true);
+    setTimeout(() => {
+      setIsUpiSimulating(false);
+      handlePlaceOrder('upi');
+    }, 2500);
+  };
+
+  const checkDeliveryPincode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(pincodeQuery)) {
+      setDeliveryStatus('Please enter a valid 6-digit numeric pincode.');
+      return;
+    }
+    
+    // Simple mock routing rules based on first digit of Indian pincode
+    const stateDigit = pincodeQuery.charAt(0);
+    if (stateDigit === '2') {
+      setDeliveryStatus('✓ Express Farm Direct: Delivery within 2-3 Days. Shipping is FREE.');
+    } else if (['1', '3', '4'].includes(stateDigit)) {
+      setDeliveryStatus('✓ Standard Courier Available: Delivery in 4-5 Days. Shipping is FREE.');
+    } else {
+      setDeliveryStatus('✓ Out-of-state Shipping: Delivery in 6-8 Days. Special protection packaging added.');
+    }
   };
 
   const filtered = products.filter(p => 
@@ -103,56 +268,59 @@ export default function Marketplace() {
   );
 
   return (
-    <div className="bg-[#fafafa] min-h-screen pb-20 font-sans">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen pb-20 font-sans">
       {/* ── PREMIUM HEADER ── */}
-      <div className="relative pt-24 pb-32 overflow-hidden">
-        <div className="absolute inset-0 z-[-1]">
-          <img 
-            src={bgDragonFruit} 
-            alt="Background" 
-            className="w-full h-full object-cover opacity-5"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-pitaya/20 to-white -z-10"></div>
+      <div className="relative pt-28 pb-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-pitaya/10 via-slate-50 to-slate-50 dark:from-emerald-950/10 dark:via-slate-950 dark:to-slate-950 -z-10"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60rem] h-[30rem] bg-cactus/5 rounded-full blur-[120px] -z-20"></div>
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-7xl font-black text-gray-900 mb-8 tracking-tighter">
-              The <span className="text-cactus">Organic</span> Market
+            <h1 className="text-4xl md:text-6xl font-black text-slate-950 dark:text-white mb-6 tracking-tighter leading-none">
+              Adarsh <span className="text-gradient-pitaya font-black">Marketplace</span>
             </h1>
+            <p className="text-slate-500 dark:text-slate-400 font-medium max-w-xl mx-auto text-base mb-8">
+              Secure premium, robust plant cuttings ready for potting, or book fresh seasonal dragon fruit harvest deliveries direct from our farm.
+            </p>
             
             {/* Search Bar */}
             <div className="relative max-w-2xl mx-auto group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-cactus transition-colors" size={24} />
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cactus transition-colors" size={22} />
               <input 
                 type="text" 
-                placeholder="Search fresh fruits, live plants..."
+                placeholder="Search red pitaya, grafted saplings, organic soil..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-16 pr-6 py-6 bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 outline-none border-none focus:ring-4 focus:ring-cactus/10 transition-all text-lg font-medium"
+                className="w-full pl-16 pr-24 py-5 bg-white dark:bg-slate-900 rounded-full shadow-lg border border-slate-100 dark:border-slate-800 outline-none focus:ring-4 focus:ring-cactus/15 focus:border-cactus transition-all text-base font-semibold dark:text-white"
               />
               <button 
                 onClick={() => setIsCartOpen(true)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-cactus p-4 rounded-2xl text-white shadow-lg shadow-cactus/20 hover:scale-105 transition-transform flex items-center space-x-2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-cactus hover:bg-cactus-hover py-3 px-5 rounded-full text-white shadow-md transition-transform flex items-center space-x-2 cursor-pointer"
               >
-                <ShoppingCart size={20} />
-                {cart.length > 0 && <span className="font-black text-sm">{cart.length}</span>}
+                <ShoppingCart size={18} />
+                <span className="font-extrabold text-sm">{cart.length > 0 ? cart.reduce((s,i) => s+i.quantity,0) : 0}</span>
               </button>
             </div>
 
+            {/* Bulk Discount Notice Banner */}
+            <div className="mt-8 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-2xl p-4 max-w-2xl mx-auto flex items-center gap-3 justify-center text-xs font-bold text-emerald-800 dark:text-emerald-300">
+              <Percent size={18} className="text-cactus shrink-0" />
+              <span>Plant Bulk Promotion: Add any 10 or more plants to your cart and get 15% discount on them!</span>
+            </div>
+
             {/* Categories */}
-            <div className="flex flex-wrap justify-center gap-4 mt-12">
+            <div className="flex flex-wrap justify-center gap-3 mt-8">
               {['All', 'Fruit', 'Live Plant'].map((cat) => (
                 <button 
                   key={cat}
                   onClick={() => setCategory(cat)}
-                  className={`px-8 py-3 rounded-full font-bold text-sm tracking-widest uppercase transition-all ${
+                  className={`px-6 py-2.5 rounded-full font-bold text-xs tracking-widest uppercase transition-all cursor-pointer ${
                     category === cat 
-                    ? 'bg-gray-900 text-white shadow-xl scale-105' 
-                    : 'bg-white text-gray-400 hover:bg-gray-50'
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-md scale-102' 
+                    : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-150 dark:border-slate-800'
                   }`}
                 >
-                  {cat}
+                  {cat}s
                 </button>
               ))}
             </div>
@@ -161,53 +329,70 @@ export default function Marketplace() {
       </div>
 
       {/* ── PRODUCT GRID ── */}
-      <div className="container mx-auto px-6 -mt-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filtered.map((product) => (
             <div 
               key={product.id}
-              className="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col"
+              className="group bg-white dark:bg-slate-900 rounded-[2.2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 dark:border-slate-800 flex flex-col h-full"
             >
-              <div className="relative aspect-square overflow-hidden cursor-pointer" onClick={() => setSelectedProduct(product)}>
+              {/* Image */}
+              <div 
+                className="relative aspect-square overflow-hidden cursor-pointer bg-slate-100 dark:bg-slate-950" 
+                onClick={() => setSelectedProduct(product)}
+              >
                 <img 
                   src={product.image} 
                   alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-4 right-4 flex flex-col gap-2">
-                  <button className="p-3 bg-white/80 backdrop-blur-md rounded-2xl text-gray-400 hover:text-pitaya transition-colors shadow-lg">
-                    <Heart size={20} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-8 flex flex-col flex-grow">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-cactus bg-cactus/5 px-3 py-1 rounded-full">
+                <div className="absolute top-4 left-4">
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                    product.category === 'Fruit' ? 'bg-pink-500 text-white' : 'bg-emerald-500 text-white'
+                  }`}>
                     {product.category}
                   </span>
-                  <div className="flex text-yellow-400">
+                </div>
+                {product.category === 'Fruit' && (
+                  <div className="absolute bottom-4 left-4">
+                    <span className="bg-slate-900/80 backdrop-blur-md text-white px-3 py-1 rounded-lg text-[10px] font-bold">
+                      Seasonal booking
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Details */}
+              <div className="p-6 flex flex-col flex-grow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.schedule}</span>
+                  <div className="flex text-yellow-500 items-center">
                     <Star size={12} fill="currentColor" />
-                    <span className="text-[10px] font-bold text-gray-400 ml-1">4.9</span>
+                    <span className="text-[10px] font-bold text-slate-400 ml-1">4.9</span>
                   </div>
                 </div>
-                <h3 className="text-xl font-black text-gray-900 mb-2 leading-tight group-hover:text-cactus transition-colors cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                
+                <h3 
+                  className="text-lg font-bold text-slate-950 dark:text-white mb-2 leading-tight hover:text-pitaya transition-colors cursor-pointer line-clamp-1" 
+                  onClick={() => setSelectedProduct(product)}
+                >
                   {product.name}
                 </h3>
-                <p className="text-sm text-gray-400 font-medium line-clamp-2 mb-6">
+                
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 line-clamp-2 leading-relaxed">
                   {product.description}
                 </p>
                 
-                <div className="mt-auto flex items-center justify-between">
+                <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
                   <div>
-                    <span className="text-2xl font-black text-gray-900">₹{product.price}</span>
-                    <span className="text-xs text-gray-400 font-bold ml-1">/{product.unit}</span>
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">₹{product.price}</span>
+                    <span className="text-[10px] text-slate-400 font-bold ml-0.5">/{product.unit}</span>
                   </div>
                   <button 
                     onClick={() => addToCart(product)}
-                    className="p-4 bg-gray-50 rounded-2xl text-cactus hover:bg-cactus hover:text-white transition-all group/btn shadow-sm"
+                    className="p-3 bg-cactus/10 text-cactus hover:bg-cactus hover:text-white rounded-xl transition-all cursor-pointer"
                   >
-                    <Plus size={20} className="group-hover/btn:rotate-90 transition-transform" />
+                    <Plus size={16} />
                   </button>
                 </div>
               </div>
@@ -216,277 +401,359 @@ export default function Marketplace() {
         </div>
       </div>
 
-      {/* ── PRODUCT MODAL ── */}
+      {/* ── PRODUCT DETAIL MODAL ── */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md">
-          <div className="bg-white w-full max-w-5xl rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 relative">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 relative flex flex-col max-h-[90vh]">
             <button 
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-8 right-8 z-10 p-3 bg-white/80 backdrop-blur-md rounded-2xl hover:bg-white transition-all shadow-lg"
+              className="absolute top-6 right-6 z-10 p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-450 rounded-full hover:bg-slate-100 transition-all cursor-pointer"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
             
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              <div className="aspect-square bg-gray-100">
-                <img src={selectedProduct.image} className="w-full h-full object-cover" />
-              </div>
-              <div className="p-12 flex flex-col">
-                <div className="mb-8">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cactus bg-cactus/5 px-4 py-1.5 rounded-full">Premium Selection</span>
-                  <h2 className="text-4xl md:text-5xl font-black text-gray-900 mt-6 mb-4 leading-tight">{selectedProduct.name}</h2>
-                  <p className="text-lg text-gray-500 leading-relaxed">{selectedProduct.description}</p>
+            <div className="overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2">
+                <div className="aspect-square bg-slate-50 dark:bg-slate-950 w-full">
+                  <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
                 </div>
-
-                <div className="bg-soft-green/30 p-8 rounded-[2rem] border border-cactus/10 mb-10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Current Price</p>
-                      <span className="text-4xl font-black text-gray-900">₹{selectedProduct.price}</span>
-                      <span className="text-sm font-bold text-gray-400 ml-2">per {selectedProduct.unit}</span>
+                
+                <div className="p-8 md:p-10 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="badge-cactus">{selectedProduct.category}</span>
+                      <span className="text-xs font-bold text-slate-400">{selectedProduct.schedule}</span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">In Stock</p>
-                      <span className="text-xl font-black text-cactus">50+ Units</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-auto space-y-4">
-                  <button 
-                    onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }}
-                    className="w-full btn-primary py-5 text-xl flex items-center justify-center space-x-3"
-                  >
-                    <ShoppingCart size={24} />
-                    <span>Add to Bag</span>
-                  </button>
-                  <button className="w-full py-5 text-sm font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 flex items-center justify-center space-x-2">
-                    <Share2 size={16} />
-                    <span>Share with farmers</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* ── REVIEW SYSTEM ── */}
-            <div className="bg-gray-50 border-t border-gray-100 p-12">
-              <h3 className="text-2xl font-black text-gray-900 mb-8">Customer Reviews</h3>
-              
-              <div className="space-y-6 mb-8">
-                {JSON.parse(localStorage.getItem(`reviews_${selectedProduct.id}`) || '[]').length === 0 ? (
-                  <p className="text-gray-400 italic">No reviews yet. Be the first to review!</p>
-                ) : (
-                  JSON.parse(localStorage.getItem(`reviews_${selectedProduct.id}`) || '[]').map((rev: any, i: number) => (
-                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="flex text-yellow-400">
-                          {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} fill={s <= rev.rating ? 'currentColor' : 'none'} />)}
+                    
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-950 dark:text-white mb-4 leading-tight">{selectedProduct.name}</h2>
+                    <p className="text-sm text-slate-550 dark:text-slate-400 leading-relaxed mb-6">{selectedProduct.description}</p>
+                    
+                    <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl mb-6">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Booking Price</span>
+                          <span className="text-3xl font-black text-slate-950 dark:text-white">₹{selectedProduct.price}</span>
+                          <span className="text-xs font-bold text-slate-400 ml-1">per {selectedProduct.unit}</span>
                         </div>
-                        <span className="text-xs font-bold text-gray-400">- {rev.userName}</span>
+                        <div className="text-right">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Estimated Stock</span>
+                          <span className="text-sm font-black text-cactus">{selectedProduct.stock} {selectedProduct.unit}s left</span>
+                        </div>
                       </div>
-                      <p className="text-gray-600">{rev.comment}</p>
                     </div>
-                  ))
-                )}
-              </div>
 
-              {localStorage.getItem('user') ? (
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const user = JSON.parse(localStorage.getItem('user') || '{}');
-                  const comment = (e.target as any).elements[0].value;
-                  const rating = 5; // Simplified for now
-                  const newReview = { userName: user.name, comment, rating, date: new Date().toISOString() };
-                  const reviews = JSON.parse(localStorage.getItem(`reviews_${selectedProduct.id}`) || '[]');
-                  localStorage.setItem(`reviews_${selectedProduct.id}`, JSON.stringify([newReview, ...reviews]));
-                  (e.target as any).reset();
-                  setSelectedProduct({...selectedProduct}); // Trigger re-render
-                }} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                  <h4 className="font-bold text-gray-900 mb-4">Leave a Review</h4>
-                  <div className="flex items-center space-x-2 mb-4 text-yellow-400">
-                    {[1, 2, 3, 4, 5].map(s => <Star key={s} size={24} fill="currentColor" className="cursor-pointer" />)}
+                    {/* Delivery Pincode checker */}
+                    <div className="mb-6 border-t border-slate-100 dark:border-slate-800 pt-4">
+                      <form onSubmit={checkDeliveryPincode} className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="Check Pincode (e.g. 228001)..."
+                          value={pincodeQuery}
+                          onChange={(e) => setPincodeQuery(e.target.value)}
+                          className="flex-grow px-4 py-2 text-xs bg-slate-100 dark:bg-slate-950 rounded-xl outline-none font-semibold border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                        />
+                        <button type="submit" className="px-4 py-2 bg-slate-850 hover:bg-slate-900 dark:bg-slate-800 text-white font-bold rounded-xl text-xs cursor-pointer">
+                          Verify
+                        </button>
+                      </form>
+                      {deliveryStatus && (
+                        <p className={`text-xs mt-2 font-bold ${deliveryStatus.startsWith('✓') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                          {deliveryStatus}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <textarea 
-                    placeholder="Share your experience with this product..."
-                    className="w-full px-5 py-4 bg-gray-50 rounded-xl outline-none border-none focus:ring-2 focus:ring-cactus/20 min-h-[100px] mb-4"
-                    required
-                  />
-                  <button type="submit" className="btn-primary">Submit Review</button>
-                </form>
-              ) : (
-                <div className="text-center p-6 bg-white rounded-2xl border border-gray-100">
-                  <p className="text-gray-500 font-medium">Please <Link to="/login" className="text-pitaya font-bold hover:underline">login</Link> to leave a review.</p>
+
+                  <div className="space-y-3">
+                    <button 
+                      onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }}
+                      className="w-full btn-primary py-4 text-base"
+                    >
+                      <ShoppingCart size={18} />
+                      <span>Add to Shop Basket</span>
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
-            
           </div>
         </div>
       )}
 
-      {/* ── CART & CHECKOUT SIDEBAR ── */}
+      {/* ── CART SIDEBAR ── */}
       {isCartOpen && (
-        <div className="fixed inset-0 z-[300] bg-gray-900/60 backdrop-blur-sm flex justify-end">
-          <div className="w-full max-w-xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
-            {/* Header */}
-            <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-[300] bg-slate-950/60 backdrop-blur-sm flex justify-end">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            {/* Sidebar Header */}
+            <div className="p-6 border-b border-slate-100 dark:border-slate-850 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                  {checkoutStep === 'success' ? 'Order Confirmed!' : 'Your Basket'}
+                <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                  {checkoutStep === 'success' ? 'Booking Success!' : 'Farming Basket'}
                 </h2>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
-                  {cart.length} items selected
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                  {cart.reduce((s,i)=>s+i.quantity,0)} Items Selected
                 </p>
               </div>
-              <button onClick={() => { setIsCartOpen(false); setCheckoutStep('cart'); }} className="p-3 bg-gray-50 rounded-2xl text-gray-400 hover:text-gray-900 transition-colors">
-                <X size={24} />
+              <button 
+                onClick={() => { setIsCartOpen(false); setCheckoutStep('cart'); setDeliveryStatus(null); }} 
+                className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-xl hover:bg-slate-100 cursor-pointer"
+              >
+                <X size={18} />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="flex-grow overflow-y-auto p-8 custom-scrollbar">
+            {/* Sidebar Content */}
+            <div className="flex-grow overflow-y-auto p-6 custom-scrollbar">
               {checkoutStep === 'cart' && (
                 <div className="space-y-6">
                   {cart.length === 0 ? (
                     <div className="text-center py-20">
-                      <div className="bg-gray-50 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-gray-300">
-                        <ShoppingCart size={40} />
+                      <div className="bg-slate-50 dark:bg-slate-950 w-16 h-16 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 text-slate-350 dark:text-slate-650">
+                        <ShoppingCart size={28} />
                       </div>
-                      <p className="text-gray-400 font-bold">Your basket is empty</p>
+                      <p className="text-sm font-bold text-slate-400">Basket is empty</p>
                     </div>
                   ) : (
-                    cart.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-6">
-                        <img src={item.image} className="w-24 h-24 rounded-3xl object-cover" />
-                        <div className="flex-grow">
-                          <h4 className="font-bold text-gray-900">{item.name}</h4>
-                          <p className="text-sm font-black text-cactus">₹{item.price} <span className="text-[10px] text-gray-400">/{item.unit}</span></p>
-                          <div className="flex items-center space-x-4 mt-3">
-                            <div className="flex items-center bg-gray-50 rounded-xl p-1">
-                              <button onClick={() => updateQuantity(item.id, -1)} className="p-2 hover:bg-white rounded-lg transition-colors"><Minus size={14}/></button>
-                              <span className="w-10 text-center font-bold text-sm">{item.quantity}</span>
-                              <button onClick={() => updateQuantity(item.id, 1)} className="p-2 hover:bg-white rounded-lg transition-colors"><Plus size={14}/></button>
+                    <>
+                      <div className="space-y-4">
+                        {cart.map((item) => (
+                          <div key={item.id} className="flex items-center gap-4 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-850">
+                            <img src={item.image} className="w-16 h-16 rounded-xl object-cover" alt={item.name} />
+                            <div className="flex-grow">
+                              <h4 className="font-bold text-xs text-slate-900 dark:text-white line-clamp-1">{item.name}</h4>
+                              <p className="text-xs font-black text-cactus mt-0.5">₹{item.price} <span className="text-[10px] text-slate-400">/{item.unit}</span></p>
+                              
+                              <div className="flex items-center gap-2 mt-2">
+                                <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg p-0.5">
+                                  <button onClick={() => updateQuantity(item.id, -1)} className="p-1 hover:bg-slate-50 dark:hover:bg-slate-850 rounded"><Minus size={10}/></button>
+                                  <span className="w-6 text-center font-bold text-xs dark:text-white">{item.quantity}</span>
+                                  <button onClick={() => updateQuantity(item.id, 1)} className="p-1 hover:bg-slate-50 dark:hover:bg-slate-850 rounded"><Plus size={10}/></button>
+                                </div>
+                                <button onClick={() => updateQuantity(item.id, -item.quantity)} className="text-[10px] font-bold text-red-400 hover:text-red-500 cursor-pointer">Remove</button>
+                              </div>
                             </div>
-                            <button onClick={() => updateQuantity(item.id, -item.quantity)} className="text-xs font-bold text-red-400 hover:text-red-600">Remove</button>
+                            <div className="text-right shrink-0">
+                              <p className="font-black text-xs text-slate-900 dark:text-white">₹{item.price * item.quantity}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Plant Discount Banner if eligible */}
+                      {plantDiscountEligibility ? (
+                        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-150 dark:border-emerald-850 rounded-2xl p-4 flex items-start gap-2.5">
+                          <Percent className="text-cactus shrink-0 mt-0.5" size={16} />
+                          <div>
+                            <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400">Bulk Discount Applied!</p>
+                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400/80 mt-0.5">You unlocked a 15% discount on all plant saplings and cuttings.</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-black text-gray-900">₹{item.price * item.quantity}</p>
-                        </div>
-                      </div>
-                    ))
+                      ) : (
+                        cart.some(i => i.category === 'Live Plant') && (
+                          <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-850 flex items-start gap-2.5">
+                            <Info className="text-slate-400 shrink-0 mt-0.5" size={16} />
+                            <div className="text-[10px] text-slate-450">
+                              <p className="font-bold">Unlock 15% Plant Discount</p>
+                              <p className="mt-0.5">Add {10 - totalPlantsQuantity} more plant cuttings to activate the bulk discount rate.</p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </>
                   )}
                 </div>
               )}
 
               {checkoutStep === 'address' && (
-                <div className="space-y-6">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <MapPin size={20} className="text-cactus" />
-                    <span>Delivery Address</span>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
+                    <MapPin size={18} className="text-cactus" />
+                    <span>Booking Delivery Address</span>
                   </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <AddressInput label="Full Name" value={address.name} onChange={(v) => setAddress({...address, name: v})} colSpan={2} />
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <AddressInput label="Consignee Full Name" value={address.name} onChange={(v) => setAddress({...address, name: v})} colSpan={2} />
                     <AddressInput label="Phone Number" value={address.phone} onChange={(v) => setAddress({...address, phone: v})} />
-                    <AddressInput label="Pincode" value={address.pincode} onChange={(v) => setAddress({...address, pincode: v})} />
-                    <AddressInput label="City" value={address.city} onChange={(v) => setAddress({...address, city: v})} />
-                    <AddressInput label="Street / Landmark" value={address.street} onChange={(v) => setAddress({...address, street: v})} colSpan={2} />
+                    <AddressInput label="Postal Pincode" value={address.pincode} onChange={(v) => setAddress({...address, pincode: v})} />
+                    <AddressInput label="City/Town" value={address.city} onChange={(v) => setAddress({...address, city: v})} />
+                    <AddressInput label="Full Delivery Address" value={address.street} onChange={(v) => setAddress({...address, street: v})} colSpan={2} />
                   </div>
                 </div>
               )}
 
               {checkoutStep === 'payment' && (
-                <div className="space-y-8">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <CreditCard size={20} className="text-cactus" />
-                    <span>Payment Method</span>
+                <div className="space-y-6">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
+                    <CreditCard size={18} className="text-cactus" />
+                    <span>Booking Payment Options</span>
                   </h3>
-                  <div className="space-y-4">
-                    <PaymentOption 
-                      id="cod" 
-                      label="Cash on Delivery" 
-                      selected 
-                      disabled={cart.length > 0 && !cart.every(i => i.allowedPayments?.includes('cod'))}
-                    />
-                    <PaymentOption 
-                      id="upi" 
-                      label="UPI / PhonePe" 
-                      disabled={cart.length > 0 && !cart.every(i => i.allowedPayments?.includes('upi'))}
-                    />
-                    <PaymentOption 
-                      id="card" 
-                      label="Credit / Debit Card" 
-                      disabled={cart.length > 0 && !cart.every(i => i.allowedPayments?.includes('card'))}
-                    />
-                    <PaymentOption 
-                      id="netbanking" 
-                      label="Net Banking" 
-                      disabled={cart.length > 0 && !cart.every(i => i.allowedPayments?.includes('netbanking'))}
-                    />
+                  <div className="space-y-3">
+                    <div 
+                      onClick={() => setPaymentMethod('cod')}
+                      className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between cursor-pointer ${
+                        paymentMethod === 'cod' ? 'border-cactus bg-cactus/5 dark:bg-emerald-950/20' : 'border-slate-100 dark:border-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${paymentMethod === 'cod' ? 'border-cactus' : 'border-slate-300'}`}>
+                          {paymentMethod === 'cod' && <div className="w-2 h-2 bg-cactus rounded-full" />}
+                        </div>
+                        <span className="text-xs font-bold dark:text-white">Pay Cash on Delivery (COD)</span>
+                      </div>
+                      <span className="text-[9px] font-bold text-slate-400">Standard</span>
+                    </div>
+
+                    <div 
+                      onClick={() => setPaymentMethod('upi')}
+                      className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between cursor-pointer ${
+                        paymentMethod === 'upi' ? 'border-cactus bg-cactus/5 dark:bg-emerald-950/20' : 'border-slate-100 dark:border-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${paymentMethod === 'upi' ? 'border-cactus' : 'border-slate-300'}`}>
+                          {paymentMethod === 'upi' && <div className="w-2 h-2 bg-cactus rounded-full" />}
+                        </div>
+                        <span className="text-xs font-bold dark:text-white">Instant UPI (Pay via PhonePe / GPay)</span>
+                      </div>
+                      <span className="text-[9px] font-bold text-cactus">Express Process</span>
+                    </div>
                   </div>
-                  <div className="p-6 bg-cactus/5 rounded-3xl border border-cactus/10">
-                    <p className="text-sm text-cactus leading-relaxed">
-                      <strong>Payment Availability:</strong> Some payment methods may be restricted depending on the items in your basket.
+                  
+                  <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-850 text-[10px] text-slate-500 leading-relaxed">
+                    <p className="font-bold flex items-center gap-1 mb-1 text-slate-700 dark:text-slate-300">
+                      <Truck size={12} /> Direct Farm Delivery
                     </p>
+                    <span>We process and hand-pack your cuttings in high-grade moisture retention coco-peat. Deliveries are dispatched twice weekly.</span>
+                  </div>
+                </div>
+              )}
+
+              {checkoutStep === 'upi-scan' && (
+                <div className="text-center py-6 space-y-6 animate-in zoom-in-95 duration-200">
+                  <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-[2rem] border border-slate-150 dark:border-slate-850 inline-block">
+                    <QrCode size={160} className="mx-auto text-slate-900 dark:text-white" />
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">Scan QR to Book Cuttings</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Scan using BHIM, PhonePe, Paytm, or Google Pay.</p>
+                    <p className="text-base font-black text-cactus mt-3">Pay Amount: ₹{cartTotal}</p>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-850 space-y-2">
+                    <button 
+                      onClick={simulateUpiPayment}
+                      disabled={isUpiSimulating}
+                      className="w-full btn-primary py-3.5 text-sm cursor-pointer"
+                    >
+                      {isUpiSimulating ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          Verifying Payment Approved...
+                        </span>
+                      ) : (
+                        "I Have Scanned & Paid"
+                      )}
+                    </button>
+                    <button 
+                      onClick={() => setCheckoutStep('payment')}
+                      className="w-full text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 py-2 cursor-pointer"
+                    >
+                      Go Back
+                    </button>
                   </div>
                 </div>
               )}
 
               {checkoutStep === 'success' && (
-                <div className="text-center py-12">
-                  <div className="bg-cactus w-24 h-24 rounded-[3rem] flex items-center justify-center mx-auto mb-8 text-white shadow-2xl shadow-cactus/20">
-                    <CheckCircle2 size={48} />
+                <div className="text-center py-10">
+                  <div className="bg-cactus w-20 h-20 rounded-[1.8rem] flex items-center justify-center mx-auto mb-6 text-white shadow-lg shadow-cactus/10">
+                    <CheckCircle2 size={40} />
                   </div>
-                  <h3 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">Order Successful!</h3>
-                  <p className="text-gray-500 font-medium mb-10 leading-relaxed">
-                    Thank you for shopping at Adarsh Farm. Your order has been placed and is being reviewed by our team.
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">Booking Confirmed!</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-8 leading-relaxed max-w-xs mx-auto">
+                    We have successfully registered your dragon fruit order. View the tracking status or download receipts directly from your farming dashboard.
                   </p>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <button 
                       onClick={() => { setIsCartOpen(false); setCheckoutStep('cart'); }} 
-                      className="w-full btn-primary py-4"
+                      className="w-full btn-primary py-3.5"
                     >
-                      Continue Shopping
+                      Done
                     </button>
-                    <button onClick={() => window.location.href = '/dashboard'} className="w-full py-4 text-sm font-black uppercase tracking-widest text-gray-400 hover:text-gray-900">
-                      View My Orders
-                    </button>
+                    <Link to="/dashboard" onClick={() => setIsCartOpen(false)} className="w-full btn-secondary py-3.5">
+                      Go to Dashboard
+                    </Link>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Footer */}
-            {checkoutStep !== 'success' && cart.length > 0 && (
-              <div className="p-8 border-t border-gray-100 space-y-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-bold text-gray-400">
+            {/* Sidebar Footer (Calculations & Triggers) */}
+            {checkoutStep !== 'success' && checkoutStep !== 'upi-scan' && cart.length > 0 && (
+              <div className="p-6 border-t border-slate-100 dark:border-slate-850 space-y-4 bg-slate-50/50 dark:bg-slate-950/20">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-bold text-slate-400">
                     <span>Subtotal</span>
-                    <span>₹{cartTotal}</span>
+                    <span>₹{rawSubtotal}</span>
                   </div>
-                  <div className="flex justify-between text-sm font-bold text-gray-400">
-                    <span>Shipping</span>
-                    <span className="text-cactus font-black">FREE</span>
+                  {plantDiscountEligibility && (
+                    <div className="flex justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <span>15% Plant Discount</span>
+                      <span>-₹{plantDiscountAmount}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-xs font-bold text-slate-400">
+                    <span>Shipping fee</span>
+                    <span className="text-cactus">FREE</span>
                   </div>
-                  <div className="flex justify-between text-xl font-black text-gray-900 pt-2 border-t border-gray-50">
+                  <div className="flex justify-between text-lg font-black text-slate-900 dark:text-white pt-2 border-t border-slate-100 dark:border-slate-850 mt-1">
                     <span>Total Amount</span>
                     <span>₹{cartTotal}</span>
                   </div>
                 </div>
 
                 {checkoutStep === 'cart' && (
-                  <button onClick={() => setCheckoutStep('address')} className="w-full btn-primary py-5 text-lg flex items-center justify-center space-x-3">
-                    <span>Proceed to Checkout</span>
-                    <ChevronRight size={20} />
+                  <button 
+                    onClick={() => {
+                      const user = localStorage.getItem('user');
+                      if (!user) {
+                        alert('Please login to place an order.');
+                        return;
+                      }
+                      setCheckoutStep('address');
+                    }} 
+                    className="w-full btn-primary py-4 text-sm"
+                  >
+                    <span>Proceed to Delivery Info</span>
+                    <ChevronRight size={16} />
                   </button>
                 )}
                 {checkoutStep === 'address' && (
-                  <button onClick={() => setCheckoutStep('payment')} className="w-full btn-primary py-5 text-lg">Continue to Payment</button>
+                  <button 
+                    onClick={() => {
+                      if (!address.name || !address.phone || !address.city || !address.pincode || !address.street) {
+                        alert('Please fill out all address fields.');
+                        return;
+                      }
+                      setCheckoutStep('payment');
+                    }}
+                    className="w-full btn-primary py-4 text-sm"
+                  >
+                    <span>Proceed to Payment</span>
+                  </button>
                 )}
                 {checkoutStep === 'payment' && (
-                  <button onClick={handlePlaceOrder} className="w-full btn-primary py-5 text-lg flex items-center justify-center space-x-3">
-                    <Package size={24} />
-                    <span>Place Order (COD)</span>
+                  <button 
+                    onClick={() => {
+                      if (paymentMethod === 'upi') {
+                        startUpiFlow();
+                      } else {
+                        handlePlaceOrder('cod');
+                      }
+                    }} 
+                    className="w-full btn-primary py-4 text-sm"
+                  >
+                    {paymentMethod === 'upi' ? "Pay via UPI QR Code" : "Book with Cash on Delivery (COD)"}
                   </button>
                 )}
               </div>
@@ -501,30 +768,14 @@ export default function Marketplace() {
 function AddressInput({ label, value, onChange, colSpan = 1 }: { label: string, value: string, onChange: (v: string) => void, colSpan?: number }) {
   return (
     <div className={colSpan === 2 ? 'col-span-2' : ''}>
-      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 mb-1 block">{label}</label>
+      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 mb-1 block">{label}</label>
       <input 
         type="text" 
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-5 py-3 bg-gray-50 rounded-2xl outline-none border-none focus:ring-2 focus:ring-cactus/20 font-medium text-sm"
+        className="w-full px-4 py-2.5 bg-slate-55 dark:bg-slate-950/70 border border-slate-100 dark:border-slate-850 rounded-xl outline-none focus:ring-2 focus:ring-cactus/20 font-bold text-xs dark:text-white"
         required
       />
-    </div>
-  );
-}
-
-function PaymentOption({ label, selected, disabled }: any) {
-  return (
-    <div className={`p-5 rounded-[2rem] border-2 transition-all flex items-center justify-between ${
-      selected ? 'border-cactus bg-cactus/5' : 'border-gray-50 bg-gray-50/50'
-    } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-      <div className="flex items-center space-x-4">
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected ? 'border-cactus' : 'border-gray-200'}`}>
-          {selected && <div className="w-2 h-2 bg-cactus rounded-full" />}
-        </div>
-        <span className={`font-bold ${selected ? 'text-gray-900' : 'text-gray-400'}`}>{label}</span>
-      </div>
-      {disabled && <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Soon</span>}
     </div>
   );
 }

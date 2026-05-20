@@ -32,6 +32,20 @@ export default function Admin() {
   // Gallery Management
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
 
+  // Journal Management
+  const [journalPosts, setJournalPosts] = useState<any[]>([]);
+  
+  // Visit Approval States
+  const [approvingVisit, setApprovingVisit] = useState<any | null>(null);
+  const [selectedGuide, setSelectedGuide] = useState('Manoj Kumar');
+  const [adminNotes, setAdminNotes] = useState('');
+  
+  // Journal Create States
+  const [newPostTitle, setNewPostTitle] = useState('');
+  const [newPostDesc, setNewPostDesc] = useState('');
+  const [newPostTag, setNewPostTag] = useState<'Harvest' | 'Bloom Alert' | 'Farm Tour' | 'Organic Practice'>('Harvest');
+  const [newPostImage, setNewPostImage] = useState('');
+
   // Farm Settings
   const [farmSettings, setFarmSettings] = useState({
     farmName: 'Adarsh Dragon Fruit Farm',
@@ -73,10 +87,13 @@ export default function Admin() {
 
     const storedVisits = JSON.parse(localStorage.getItem('farm_visits') || '[]');
     setVisits(storedVisits);
+
+    const storedJournal = JSON.parse(localStorage.getItem('farm_journal') || '[]');
+    setJournalPosts(storedJournal);
   }, []);
 
-  const handleUpdateVisitStatus = (visitId: string, status: string) => {
-    const updated = visits.map(v => v.id === visitId ? { ...v, status } : v);
+  const handleUpdateVisitStatus = (visitId: string, status: string, guideName?: string, coordinatorNotes?: string) => {
+    const updated = visits.map(v => v.id === visitId ? { ...v, status, guideName, coordinatorNotes } : v);
     setVisits(updated);
     localStorage.setItem('farm_visits', JSON.stringify(updated));
     
@@ -87,11 +104,15 @@ export default function Admin() {
     const users = JSON.parse(localStorage.getItem('users_db') || '[]'); // Mock user DB
     const targetUser = users.find((u: any) => u.loginId === visit?.loginId);
     if (targetUser) {
+      const message = status === 'Approved' 
+        ? `Your farm visit for ${visit?.date} has been approved. Guide: ${guideName}. Notes: ${coordinatorNotes || 'None'}.`
+        : `Your farm visit for ${visit?.date} has been denied.`;
+
       const notification = {
         id: Date.now(),
         type: status === 'Approved' ? 'success' : 'error',
         title: `Visit ${status}`,
-        message: `Your farm visit for ${visit?.date} has been ${status.toLowerCase()}.`,
+        message: message,
         date: new Date().toISOString(),
         read: false
       };
@@ -105,6 +126,43 @@ export default function Admin() {
         localStorage.setItem('user', JSON.stringify(currentUser));
       }
     }
+  };
+
+  const handlePublishJournalPost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPostTitle || !newPostDesc) return;
+
+    const newPost = {
+      id: Date.now(),
+      title: newPostTitle,
+      description: newPostDesc,
+      tag: newPostTag,
+      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+      image: newPostImage || '/images/red_fruit.png',
+      likes: 0,
+      comments: []
+    };
+
+    const updated = [newPost, ...journalPosts];
+    setJournalPosts(updated);
+    localStorage.setItem('farm_journal', JSON.stringify(updated));
+
+    logActivity('JOURNAL_POST_CREATED', `Admin published new update: ${newPostTitle}`);
+    
+    setNewPostTitle('');
+    setNewPostDesc('');
+    setNewPostImage('');
+  };
+
+  const handleRemoveJournalPost = (id: number) => {
+    if (user?.email !== SUPER_ADMIN_EMAIL) {
+      alert('Only Super Admin can delete updates.');
+      return;
+    }
+    const updated = journalPosts.filter(post => post.id !== id);
+    setJournalPosts(updated);
+    localStorage.setItem('farm_journal', JSON.stringify(updated));
+    logActivity('JOURNAL_POST_DELETED', `Admin deleted update ID: ${id}`);
   };
 
   const handleUpdateOrderStatus = (orderId: string, status: string, trackingId?: string) => {
@@ -595,49 +653,92 @@ export default function Admin() {
               <div className="space-y-8 animate-in fade-in duration-500">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Media Gallery</h1>
-                    <p className="text-gray-500 text-sm mt-1">Manage public farm photos and media.</p>
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Live Farm Journal</h1>
+                    <p className="text-gray-500 text-sm mt-1">Publish updates, seasonal alerts, and harvest logs.</p>
                   </div>
                 </div>
 
-                {isSuperAdmin && (
-                  <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
-                    <form onSubmit={handleAddImage} className="flex flex-col sm:flex-row gap-4">
-                      <div className="flex-grow relative">
-                        <ImageIcon className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100">
+                  <h3 className="text-lg font-bold text-gray-900 mb-6">Publish New Update Log</h3>
+                  <form onSubmit={handlePublishJournalPost} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-450 ml-1">Title</label>
                         <input 
-                          type="file" 
-                          accept="image/*"
-                          className="w-full pl-14 pr-6 py-4 bg-gray-50 rounded-2xl outline-none border-none focus:ring-4 focus:ring-cactus/10 transition-all font-medium"
+                          type="text"
+                          value={newPostTitle}
+                          onChange={(e) => setNewPostTitle(e.target.value)}
+                          placeholder="e.g. Night Bloom Spectacle"
+                          className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-xs"
                           required
                         />
                       </div>
-                      <button type="submit" className="btn-primary py-4 px-10 whitespace-nowrap">Upload Photo</button>
-                    </form>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {galleryImages.map((img, idx) => (
-                    <div key={img.id || idx} className="relative group rounded-[2rem] overflow-hidden shadow-sm aspect-square bg-gray-100">
-                      {img.type === 'video' ? (
-                        <video src={img.url} className="w-full h-full object-cover" muted />
-                      ) : (
-                        <img src={img.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      )}
-                      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
-                        <p className="text-white font-bold text-xs">{img.title}</p>
-                      </div>
-                      {isSuperAdmin && (
-                        <button 
-                          onClick={() => handleRemoveImage(idx)}
-                          className="absolute top-4 right-4 bg-white/90 p-2 rounded-xl text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white shadow-lg"
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-455 ml-1">Category</label>
+                        <select 
+                          value={newPostTag}
+                          onChange={(e) => setNewPostTag(e.target.value as any)}
+                          className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-xs cursor-pointer"
                         >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
+                          <option value="Harvest">Harvest</option>
+                          <option value="Bloom Alert">Bloom Alert</option>
+                          <option value="Farm Tour">Farm Tour</option>
+                          <option value="Organic Practice">Organic Practice</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-450 ml-1">Image Link / Path</label>
+                        <input 
+                          type="text"
+                          value={newPostImage}
+                          onChange={(e) => setNewPostImage(e.target.value)}
+                          placeholder="e.g. /images/red_fruit.png or Unsplash URL"
+                          className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-xs"
+                        />
+                      </div>
                     </div>
-                  ))}
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-450 ml-1">Description</label>
+                      <textarea 
+                        value={newPostDesc}
+                        onChange={(e) => setNewPostDesc(e.target.value)}
+                        placeholder="Detail what is happening at the farm (e.g. fertilizer mix ratio, crop yield)..."
+                        rows={3}
+                        className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-xs resize-none"
+                        required
+                      />
+                    </div>
+
+                    <button type="submit" className="btn-primary py-3.5 px-10 text-xs uppercase tracking-widest">
+                      Publish Farm Update
+                    </button>
+                  </form>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight">Active Logs ({journalPosts.length})</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {journalPosts.map((post) => (
+                      <div key={post.id} className="bg-white p-6 rounded-[2.5rem] border border-gray-100 flex gap-4 items-center">
+                        <img src={post.image} className="w-20 h-20 rounded-2xl object-cover shrink-0" alt="" />
+                        <div className="flex-grow min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-cactus">{post.tag}</span>
+                            <span className="text-[9px] font-bold text-gray-400">{post.date}</span>
+                          </div>
+                          <h4 className="font-bold text-sm text-gray-900 mt-1 truncate">{post.title}</h4>
+                          <p className="text-xs text-gray-500 line-clamp-2 mt-1 leading-normal font-semibold">{post.description}</p>
+                        </div>
+                        <button 
+                          onClick={() => handleRemoveJournalPost(post.id)}
+                          className="p-2.5 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors shrink-0"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -781,69 +882,159 @@ export default function Admin() {
               </div>
             )}
              {/* VISITS TAB */}
-             {activeTab === 'visits' && (
-               <div className="space-y-8 animate-in fade-in duration-500">
-                 <div className="flex items-center justify-between">
-                   <h1 className="text-3xl font-black text-gray-900 tracking-tight">Visit Requests</h1>
-                 </div>
+            {activeTab === 'visits' && (
+              <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Farm Visit Requests</h1>
+                    <p className="text-gray-500 text-sm mt-1">Review guest bookings, assign guides, and write coordinator notes.</p>
+                  </div>
+                </div>
 
-                 <div className="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
-                   <table className="w-full text-left">
-                     <thead>
-                       <tr className="border-b border-gray-50 bg-gray-50/50">
-                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Visitor</th>
-                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Date & Time</th>
-                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Status</th>
-                         <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Action</th>
-                       </tr>
-                     </thead>
-                     <tbody className="divide-y divide-gray-50">
-                       {visits.length === 0 ? (
-                         <tr>
-                           <td colSpan={4} className="px-8 py-20 text-center text-gray-400 italic">No visit requests yet.</td>
-                         </tr>
-                       ) : (
-                         visits.map((visit) => (
-                           <tr key={visit.id}>
-                             <td className="px-8 py-6 font-bold text-gray-900">{visit.name}</td>
-                             <td className="px-8 py-6 text-sm text-gray-600">{visit.date} at {visit.time}</td>
-                             <td className="px-8 py-6">
-                               <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                 visit.status === 'Approved' ? 'bg-green-50 text-green-600' :
-                                 visit.status === 'Denied' ? 'bg-red-50 text-red-600' :
-                                 'bg-yellow-50 text-yellow-600'
-                               }`}>
-                                 {visit.status}
-                               </span>
-                             </td>
-                             <td className="px-8 py-6">
-                               <div className="flex space-x-2">
-                                 {visit.status === 'Pending' && (
-                                   <>
-                                     <button 
-                                       onClick={() => handleUpdateVisitStatus(visit.id, 'Approved')}
-                                       className="px-4 py-2 bg-cactus text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
-                                     >
-                                       Approve
-                                     </button>
-                                     <button 
-                                       onClick={() => handleUpdateVisitStatus(visit.id, 'Denied')}
-                                       className="px-4 py-2 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest"
-                                     >
-                                       Deny
-                                     </button>
-                                   </>
-                                 )}
-                               </div>
-                             </td>
-                           </tr>
-                         ))
-                       )}
-                     </tbody>
-                   </table>
-                 </div>
-               </div>
-             )}
+                <div className="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left min-w-[700px]">
+                      <thead>
+                        <tr className="border-b border-gray-50 bg-gray-50/50">
+                          <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Visitor & Tour</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Date & Time</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Guests & Fee</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Guide & Notes</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Status</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50 text-xs font-bold">
+                        {visits.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="px-8 py-20 text-center text-gray-400 italic">No visit requests yet.</td>
+                          </tr>
+                        ) : (
+                          visits.map((visit) => (
+                            <tr key={visit.id}>
+                              <td className="px-8 py-6">
+                                <p className="text-sm font-black text-gray-900">{visit.name}</p>
+                                <p className="text-[10px] text-gray-405 uppercase tracking-widest mt-0.5">{visit.tourType || 'General Farm Tour'}</p>
+                              </td>
+                              <td className="px-8 py-6 text-gray-650">
+                                {visit.date} <br />
+                                <span className="text-[10px] text-gray-400 font-black">{visit.time}</span>
+                              </td>
+                              <td className="px-8 py-6">
+                                <p className="text-gray-900">{visit.guests} Guests</p>
+                                <p className="text-cactus font-black">₹{visit.totalPrice || visit.guests * 100}</p>
+                              </td>
+                              <td className="px-8 py-6 text-gray-500 max-w-[200px] truncate">
+                                {visit.status === 'Approved' ? (
+                                  <>
+                                    <p className="text-gray-900">Guide: {visit.guideName || 'Not Assigned'}</p>
+                                    <p className="text-[10px] italic">{visit.coordinatorNotes || 'No notes'}</p>
+                                  </>
+                                ) : (
+                                  <span className="italic text-gray-400">{visit.status === 'Denied' ? 'Denied' : visit.status === 'Cancelled' ? 'Cancelled' : 'Awaiting approval'}</span>
+                                )}
+                              </td>
+                              <td className="px-8 py-6">
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                  visit.status === 'Approved' ? 'bg-green-50 text-green-600' :
+                                  visit.status === 'Denied' ? 'bg-red-50 text-red-600' :
+                                  visit.status === 'Cancelled' ? 'bg-slate-100 text-slate-500' :
+                                  'bg-yellow-50 text-yellow-600'
+                                }`}>
+                                  {visit.status}
+                                </span>
+                              </td>
+                              <td className="px-8 py-6">
+                                <div className="flex space-x-2">
+                                  {visit.status === 'Pending' && (
+                                    <>
+                                      <button 
+                                        onClick={() => setApprovingVisit(visit)}
+                                        className="px-4 py-2 bg-cactus text-white rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:shadow-md transition-shadow"
+                                      >
+                                        Approve
+                                      </button>
+                                      <button 
+                                        onClick={() => handleUpdateVisitStatus(visit.id, 'Denied')}
+                                        className="px-4 py-2 bg-red-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:shadow-md transition-shadow"
+                                      >
+                                        Deny
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* APPROVAL SETTINGS MODAL */}
+                {approvingVisit && (
+                  <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative">
+                      <button 
+                        onClick={() => setApprovingVisit(null)}
+                        className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        <X size={20} />
+                      </button>
+                      <h3 className="text-xl font-black text-gray-900 mb-6">Assign Tour Guides</h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-[9px] font-black uppercase tracking-widest text-gray-450 ml-1 mb-1.5">Assign Tour Guide</label>
+                          <select 
+                            value={selectedGuide}
+                            onChange={(e) => setSelectedGuide(e.target.value)}
+                            className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-xs cursor-pointer border border-gray-150"
+                          >
+                            <option value="Manoj Kumar">Manoj Kumar (Senior Agronomist)</option>
+                            <option value="Adarsh Mishra">Adarsh Mishra (Farm Owner)</option>
+                            <option value="Ravi Shankar">Ravi Shankar (Grafting Specialist)</option>
+                            <option value="Self Guided">Self Guided Tour</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] font-black uppercase tracking-widest text-gray-455 ml-1 mb-1.5">Coordinator Notes for Visitors</label>
+                          <textarea 
+                            value={adminNotes}
+                            onChange={(e) => setAdminNotes(e.target.value)}
+                            placeholder="Add tips (e.g. wear hats, prepare tasting platters, etc.)..."
+                            rows={3}
+                            className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none font-bold text-xs resize-none border border-gray-150"
+                          />
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100 flex gap-2">
+                          <button 
+                            onClick={() => {
+                              handleUpdateVisitStatus(approvingVisit.id, 'Approved', selectedGuide, adminNotes);
+                              setApprovingVisit(null);
+                              setSelectedGuide('Manoj Kumar');
+                              setAdminNotes('');
+                            }}
+                            className="flex-grow btn-primary py-3 text-xs uppercase tracking-widest cursor-pointer"
+                          >
+                            Confirm & Approve
+                          </button>
+                          <button 
+                            onClick={() => setApprovingVisit(null)}
+                            className="px-6 py-3 bg-gray-100 text-gray-500 rounded-full font-bold text-xs uppercase tracking-widest cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </main>
         </div>
       </div>
