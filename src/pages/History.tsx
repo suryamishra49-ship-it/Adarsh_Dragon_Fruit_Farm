@@ -34,6 +34,7 @@ const getColor = (action: string) => {
 };
 
 export default function History() {
+  const [user, setUser] = useState<any>(null);
   const [logs, setLogs] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
@@ -41,18 +42,28 @@ export default function History() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = (() => {
+    const loggedUser = (() => {
       try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
     })();
 
-    if (!user) { navigate('/login'); return; }
+    if (!loggedUser) { navigate('/login'); return; }
+    setUser(loggedUser);
 
     const allLogs = JSON.parse(localStorage.getItem('farm_activity_logs') || '[]');
     
-    if (user.role === 'admin') {
-      setLogs(allLogs);
+    // Sanitize logs to support old schemas (type, desc, date) and prevent crash
+    const sanitizedLogs = allLogs.map((log: any) => ({
+      id: log.id || Date.now(),
+      action: log.action || log.type || 'DEFAULT',
+      details: log.details || log.desc || 'No details provided.',
+      createdAt: log.createdAt || log.date || new Date().toISOString(),
+      user: log.user
+    }));
+
+    if (loggedUser.role === 'admin' || loggedUser.role === 'OWNER' || loggedUser.role === 'ADMIN') {
+      setLogs(sanitizedLogs);
     } else {
-      setLogs(allLogs.filter((l: any) => l.user?.email === (user.email || user.loginId)));
+      setLogs(sanitizedLogs.filter((l: any) => l.user?.email === (loggedUser.email || loggedUser.loginId)));
     }
     setLoading(false);
   }, []);
@@ -77,7 +88,7 @@ export default function History() {
             <div>
               <h1 style={{ color: '#fff', fontSize: '2rem', marginBottom: 4 }}>📋 Activity History</h1>
               <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.95rem' }}>
-                {user?.role === 'OWNER' ? 'All platform activity across all users' : 'Your personal activity timeline'}
+                {user?.role === 'admin' || user?.role === 'OWNER' || user?.role === 'ADMIN' ? 'All platform activity across all users' : 'Your personal activity timeline'}
               </p>
             </div>
             <div style={{

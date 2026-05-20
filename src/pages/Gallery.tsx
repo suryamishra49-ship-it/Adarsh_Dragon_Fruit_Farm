@@ -25,7 +25,7 @@ export default function Gallery() {
     try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; }
   })();
   
-  const isAdmin = user?.role === 'OWNER' || user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'admin' || user?.role === 'OWNER' || user?.role === 'ADMIN';
 
   const [activeTab, setActiveTab] = useState<'varieties' | 'journal'>('varieties');
   const [journalItems, setJournalItems] = useState<JournalEntry[]>([]);

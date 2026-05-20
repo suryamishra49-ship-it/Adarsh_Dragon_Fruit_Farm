@@ -922,7 +922,9 @@ export default function Admin() {
                               </td>
                               <td className="px-8 py-6">
                                 <p className="text-gray-900">{visit.guests} Guests</p>
-                                <p className="text-cactus font-black">₹{visit.totalPrice || visit.guests * 100}</p>
+                                <p className="text-cactus font-black">
+                                  {visit.totalPrice === 0 ? 'Free' : `₹${visit.totalPrice || visit.guests * 100}`}
+                                </p>
                               </td>
                               <td className="px-8 py-6 text-gray-500 max-w-[200px] truncate">
                                 {visit.status === 'Approved' ? (

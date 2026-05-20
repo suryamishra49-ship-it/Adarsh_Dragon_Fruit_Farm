@@ -5,6 +5,7 @@ import {
   Trash2, AlertTriangle, HelpCircle, FileText
 } from 'lucide-react';
 import NutrientCalculator from '../components/NutrientCalculator';
+import { logActivity } from '../utils/logger';
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -47,15 +48,8 @@ export default function Dashboard() {
 
     localStorage.setItem('farm_visits', JSON.stringify(updatedVisits));
 
-    // Log the cancellation
-    const logs = JSON.parse(localStorage.getItem('farm_activity_logs') || '[]');
-    logs.unshift({
-      id: Date.now(),
-      type: 'APPOINTMENT_CANCELLED',
-      desc: `Visit request ${visitId} was cancelled by the customer.`,
-      date: new Date().toISOString()
-    });
-    localStorage.setItem('farm_activity_logs', JSON.stringify(logs));
+    // Log the cancellation using the helper to ensure consistent schema
+    logActivity('APPOINTMENT_CANCELLED', `Visit request ${visitId} was cancelled by the customer.`, user);
 
     // Update notifications for user
     const users = JSON.parse(localStorage.getItem('users_db') || '[]');
@@ -299,8 +293,10 @@ export default function Dashboard() {
 
                           <div className="w-full md:w-auto flex flex-col items-start md:items-end justify-between self-stretch border-t md:border-t-0 border-slate-100 dark:border-slate-850 pt-4 md:pt-0">
                             <div className="mb-4 md:mb-0 md:text-right">
-                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-450 block">Entry Fee Due</span>
-                              <span className="text-lg font-black text-slate-900 dark:text-white">₹{visit.totalPrice || visit.guests * 100}</span>
+                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-450 block">Entry Fee</span>
+                              <span className="text-lg font-black text-slate-900 dark:text-white">
+                                {visit.totalPrice === 0 ? 'Free' : `₹${visit.totalPrice || visit.guests * 100}`}
+                              </span>
                             </div>
                             
                             {visit.status === 'Pending' && (

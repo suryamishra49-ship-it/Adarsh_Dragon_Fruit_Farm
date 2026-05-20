@@ -19,13 +19,13 @@ export default function Visit() {
   ];
 
   const tourPrices: { [key: string]: number } = {
-    'General Farm Tour & Fruit Tasting': 100,
-    'Commercial Cultivation Seminar': 250,
-    'Night-Bloom Viewing & Photo Session': 150
+    'General Farm Tour & Fruit Tasting': 0,
+    'Commercial Cultivation Seminar': 0,
+    'Night-Bloom Viewing & Photo Session': 0
   };
 
-  const getPricePerGuest = () => tourPrices[tourType] || 100;
-  const totalPrice = guestCount * getPricePerGuest();
+  const getPricePerGuest = () => tourPrices[tourType] || 0;
+  const totalPrice = 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,8 +101,8 @@ export default function Visit() {
               <span className="text-slate-700 dark:text-slate-350">{guestCount} Guests</span>
             </div>
             <div className="flex justify-between text-xs font-bold text-slate-450">
-              <span>Entry Fee Paid:</span>
-              <span className="text-cactus">₹{totalPrice} (Collect at Gate)</span>
+              <span>Entry Fee:</span>
+              <span className="text-cactus">Free of Cost</span>
             </div>
           </div>
 
@@ -203,9 +203,9 @@ export default function Visit() {
                   onChange={(e) => setTourType(e.target.value)}
                   className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150 dark:border-slate-800 outline-none focus:ring-2 focus:ring-cactus/20 font-bold text-xs dark:text-white cursor-pointer"
                 >
-                  <option value="General Farm Tour & Fruit Tasting">General Farm Tour & Fruit Tasting (₹100/guest)</option>
-                  <option value="Commercial Cultivation Seminar">Commercial Cultivation Seminar (₹250/guest)</option>
-                  <option value="Night-Bloom Viewing & Photo Session">Night-Bloom Viewing & Photo Session (₹150/guest)</option>
+                  <option value="General Farm Tour & Fruit Tasting">General Farm Tour & Fruit Tasting (Free)</option>
+                  <option value="Commercial Cultivation Seminar">Commercial Cultivation Seminar (Free)</option>
+                  <option value="Night-Bloom Viewing & Photo Session">Night-Bloom Viewing & Photo Session (Free)</option>
                 </select>
               </div>
 
@@ -301,12 +301,12 @@ export default function Visit() {
                 <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-100 dark:border-slate-850 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Total Entry Fee</span>
-                    <span className="text-2xl font-black text-slate-900 dark:text-white">₹{totalPrice}</span>
+                    <span className="text-2xl font-black text-cactus">Free of Cost</span>
                     <span className="text-[10px] text-slate-400 font-bold ml-1">for {guestCount} guests</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs font-black text-cactus">
                     <Sparkles size={14} />
-                    <span>Pay at Farm Gate</span>
+                    <span>No Payment Required</span>
                   </div>
                 </div>
               )}

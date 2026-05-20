@@ -6,6 +6,7 @@ import {
   Percent, Truck, AlertCircle, Info, QrCode
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { logActivity } from '../utils/logger';
 
 interface Product {
   id: number;
@@ -200,13 +201,8 @@ export default function Marketplace() {
     const existingOrders = JSON.parse(localStorage.getItem('farm_orders') || '[]');
     localStorage.setItem('farm_orders', JSON.stringify([order, ...existingOrders]));
 
-    // Log the action
-    const logActivity = (type: string, desc: string) => {
-      const logs = JSON.parse(localStorage.getItem('farm_activity_logs') || '[]');
-      logs.unshift({ id: Date.now(), type, desc, date: new Date().toISOString() });
-      localStorage.setItem('farm_activity_logs', JSON.stringify(logs));
-    };
-    logActivity('ORDER_CREATED', `Placed order ${order.id} totaling ₹${cartTotal}`);
+    // Log the action using the imported helper
+    logActivity('ORDER_PLACED', `Placed order ${order.id} totaling ₹${cartTotal}`, user);
 
     // Send order confirmation notification
     const users = JSON.parse(localStorage.getItem('users_db') || '[]');
