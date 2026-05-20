@@ -45,7 +45,17 @@ export default function Marketplace() {
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('farm_products') || '[]');
-    if (stored.length > 0) {
+    const hasOldPlaceholders = stored.some((p: any) => 
+      p.image && (
+        p.image.includes('550258114-189a79444811') || 
+        p.image.includes('1620127252536-03bdfcf6d5c3') ||
+        p.image.includes('1557800636-894a64c1696f') ||
+        p.image.includes('1585320806297-9794b3e4eeae') ||
+        p.image.includes('1621506289937-9ccc14d599d0') ||
+        p.image.includes('1416879595882-3373a0480b5b')
+      )
+    );
+    if (stored.length > 0 && !hasOldPlaceholders) {
       setProducts(stored);
     } else {
       const initial: Product[] = [
@@ -66,7 +76,7 @@ export default function Marketplace() {
           name: 'Palora Yellow Dragon Fruit (Sweetest)', 
           price: 350, 
           unit: 'kg', 
-          image: 'https://images.unsplash.com/photo-1550258114-189a79444811?w=800', 
+          image: 'https://images.unsplash.com/photo-1616235293297-c812140c839f?w=800', 
           description: 'The sweetest dragon fruit variety in the world, sourced from premium Ecuadorian stock. Extremely rich and floral.', 
           category: 'Fruit', 
           allowedPayments: ['cod', 'upi'],
@@ -78,7 +88,7 @@ export default function Marketplace() {
           name: 'Premium White Dragon Fruit (Refreshing)', 
           price: 140, 
           unit: 'kg', 
-          image: 'https://images.unsplash.com/photo-1620127252536-03bdfcf6d5c3?w=800', 
+          image: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=800', 
           description: 'Crisp and refreshing white flesh dragon fruit. Low sugar content, ideal for refreshing summer salads.', 
           category: 'Fruit', 
           allowedPayments: ['cod', 'upi'],
@@ -90,7 +100,7 @@ export default function Marketplace() {
           name: 'American Beauty Grafted Sapling', 
           price: 280, 
           unit: 'pot', 
-          image: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=800', 
+          image: 'https://images.unsplash.com/photo-1509587584298-0f3b3a3a1797?w=800', 
           description: 'Rooted and grafted American Beauty variety plant. Known for vigorous growing habit and heavy yields of magenta fruit.', 
           category: 'Live Plant', 
           allowedPayments: ['cod', 'upi'],
@@ -102,7 +112,7 @@ export default function Marketplace() {
           name: 'Ecuadorian Palora Yellow Rooted Cutting', 
           price: 450, 
           unit: 'pot', 
-          image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800', 
+          image: 'https://images.unsplash.com/photo-1534531173927-aeb928d54385?w=800', 
           description: 'Healthy rooted cutting of the sweet yellow dragon fruit variety. Requires trellising support.', 
           category: 'Live Plant', 
           allowedPayments: ['upi'],
@@ -114,7 +124,7 @@ export default function Marketplace() {
           name: 'Vietnamese White Plant cutting', 
           price: 99, 
           unit: 'piece', 
-          image: 'https://images.unsplash.com/photo-1621506289937-9ccc14d599d0?w=800', 
+          image: 'https://images.unsplash.com/photo-1520302817595-88509dec7ec7?w=800', 
           description: 'Standard commercial white variety cuttings. Clean-cut and hardened off, ready for rooting in sandy loam soil.', 
           category: 'Live Plant', 
           allowedPayments: ['cod', 'upi'],
@@ -126,7 +136,7 @@ export default function Marketplace() {
           name: 'Organic Pitaya Soil Mix (Neem + Cow Manure)', 
           price: 199, 
           unit: 'bag', 
-          image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800', 
+          image: 'https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=800', 
           description: 'Special formulation of organic leaf mold, well-composted cow dung, bone meal, and neem cake for robust pitaya growth.', 
           category: 'Live Plant', 
           allowedPayments: ['cod', 'upi'],

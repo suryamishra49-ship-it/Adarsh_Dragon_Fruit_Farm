@@ -20,7 +20,7 @@ const VARIETIES: Variety[] = [
     skinColor: 'Red',
     brix: 19,
     description: 'Deep magenta flesh with a rich, berry-like flavor profile.',
-    image: 'https://images.unsplash.com/photo-1527324688151-0e627063f2b1?w=800'
+    image: 'https://images.unsplash.com/photo-1603533250106-9304a0808b50?w=800'
   },
   {
     id: 'physical-graffiti',
@@ -29,7 +29,7 @@ const VARIETIES: Variety[] = [
     skinColor: 'Red',
     brix: 17,
     description: 'Beautiful pink flesh with a perfect balance of sweet and tangy.',
-    image: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?w=800'
+    image: '/images/red_fruit.png'
   },
   {
     id: 'palora-yellow',
@@ -38,7 +38,7 @@ const VARIETIES: Variety[] = [
     skinColor: 'Yellow',
     brix: 22,
     description: 'The world\'s sweetest dragon fruit variety from Ecuador.',
-    image: 'https://images.unsplash.com/photo-1550258114-189a79444811?w=800'
+    image: 'https://images.unsplash.com/photo-1616235293297-c812140c839f?w=800'
   },
   {
     id: 'vietnamese-white',
@@ -47,7 +47,7 @@ const VARIETIES: Variety[] = [
     skinColor: 'Pink',
     brix: 14,
     description: 'The standard commercial variety, crisp and refreshing.',
-    image: 'https://images.unsplash.com/photo-1620127252536-03bdfcf6d5c3?w=800'
+    image: 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=800'
   },
   {
     id: 'dark-star',
@@ -56,7 +56,7 @@ const VARIETIES: Variety[] = [
     skinColor: 'Red',
     brix: 18,
     description: 'Medium-large fruit with a very grape-like sweetness.',
-    image: 'https://images.unsplash.com/photo-1621506289937-9ccc14d599d0?w=800'
+    image: 'https://images.unsplash.com/photo-1625944531869-236b3f545367?w=800'
   },
   {
     id: 'sugar-dragon',
@@ -65,7 +65,7 @@ const VARIETIES: Variety[] = [
     skinColor: 'Red',
     brix: 20,
     description: 'Small but incredibly sweet fruit, often used for cross-pollination.',
-    image: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?q=80&w=800'
+    image: 'https://images.unsplash.com/photo-1626084062145-a9a3b65e94b8?w=800'
   }
 ];
 
